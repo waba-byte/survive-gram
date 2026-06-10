@@ -2,7 +2,8 @@
 
 Mini-gioco crash/risk in stile arcade: scegli una cella, schiva il **laser** (alterna riga/colonna), il moltiplicatore sale e la griglia si stringe da 10×10 fino a 1×1 (max **96.0×**). Se il laser ti colpisce → 🟣 game over con, in modo casuale, **gatto demoniaco** o **faccia neon di Durov** e risata malefica. Incassa col **CASH OUT**.
 
-- **Zero dipendenze, zero backend**: art in **SVG/CSS coded** + audio sintetizzato via Web Audio. Uniche immagini: due piccole icone neon (logo header in blu + faccia game over in viola, ~30KB totali, sfondo trasparente).
+- **Due skin** (toggle 🟣/🔵, scelta salvata): **Viola** (griglia/laser viola, game over con gatto demoniaco o Durov viola) e **Blu Telegram** (griglia/laser blu, game over con Durov blu).
+- **Zero dipendenze, zero backend**: art in **SVG/CSS coded** + audio sintetizzato via Web Audio. Uniche immagini: tre piccole icone neon (Durov blu/viola, ~55KB totali, sfondo trasparente).
 - **Telegram Mini App ready**: integra `telegram-web-app.js` (haptics, tema, nome utente automatico, persistenza CloudStorage). Funziona identico anche fuori da Telegram.
 - **Classifica** col netto (vincite − perdite, anche negativo), salvata in `localStorage` + CloudStorage.
 - **Multilingua** (IT / EN / ES / FR / DE / PT / RU): si adatta alla lingua del dispositivo/Telegram, con selettore 🌐 poco invasivo nella schermata di gioco.
@@ -14,8 +15,9 @@ Mini-gioco crash/risk in stile arcade: scegli una cella, schiva il **laser** (al
 - `lb.js` — logica classifica condivisa tra le pagine (localStorage + Telegram CloudStorage).
 - `i18n.js` — traduzioni e selettore lingua (7 lingue), rilevamento automatico.
 - `durov-cartoon.svg` — avatar (usato come favicon; utile come icona del bot).
-- `durov-neon-blue.png` — faccia neon blu (logo affianco al nome nell'header).
-- `durov-neon-purple.png` — faccia neon viola (game over, alternata al gatto demoniaco).
+- `durov-neon-blue.png` — faccia neon blu piccola (logo header).
+- `durov-neon-blue-lg.png` — faccia neon blu grande (game over, skin Blu).
+- `durov-neon-purple.png` — faccia neon viola (game over, skin Viola, alternata al gatto demoniaco).
 
 ## Avvio locale
 ```bash

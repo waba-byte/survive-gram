@@ -20,6 +20,15 @@
     --green:#2aabee;      /* blu Telegram */
     --green-dim:#1c7fb8;
     --txt:#cfcfcf;
+    --cell-fill:#140320; --cell-hover:#2e0a40; --cell-armed:#6a1a9e;
+  }
+  /* ---- SKIN BLU TELEGRAM (toggle): griglia/laser/Durov in blu Telegram ---- */
+  body.theme-blue{
+    --bg:#03070f; --panel:#081420;
+    --red:#2aabee; --red-dim:#123a57; --red-glow:#7fd3ff;   /* "pericolo": griglia/laser/Durov -> blu */
+    --green:#8fe3ff; --green-dim:#2f86bd;                    /* accenti UI -> azzurro chiaro */
+    --cell-fill:#04141f; --cell-hover:#0c3a55; --cell-armed:#1a6f9e;
+    background:radial-gradient(circle at 50% 0%, #06121f 0%, var(--bg) 70%);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
@@ -71,10 +80,10 @@
   #gridSvg{display:block;width:100%;height:auto}
   /* scala moltiplicatore: barra ORIZZONTALE a piena larghezza, sotto la griglia */
   #scaleSvg{display:block;width:100%;max-width:560px;height:auto;pointer-events:none}
-  .cell{fill:#140320;stroke:var(--red);stroke-width:1.4;cursor:pointer;transition:fill .12s}
-  .cell:hover{fill:#2e0a40}
+  .cell{fill:var(--cell-fill);stroke:var(--red);stroke-width:1.4;cursor:pointer;transition:fill .12s}
+  .cell:hover{fill:var(--cell-hover)}
   .cell.armed{animation:armpulse .6s ease-in-out infinite}
-  @keyframes armpulse{0%,100%{fill:#2e0a40}50%{fill:#6a1a9e}}
+  @keyframes armpulse{0%,100%{fill:var(--cell-hover)}50%{fill:var(--cell-armed)}}
   .laser{stroke-linecap:round;filter:drop-shadow(0 0 8px var(--red-glow)) drop-shadow(0 0 18px var(--red))}
   .telegraph{stroke:var(--red);stroke-width:1;opacity:.35;stroke-dasharray:4 4}
   .demoncat{pointer-events:none;transform-box:fill-box;transform-origin:center;animation:catin .55s cubic-bezier(.2,1.5,.4,1) both;filter:drop-shadow(0 0 5px var(--red)) drop-shadow(0 0 16px var(--red-glow))}
@@ -127,6 +136,7 @@
   #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
+  #themeBtn{top:82px;font-size:15px;line-height:1;padding:5px 9px}
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
     background:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.22) 50%),
@@ -158,6 +168,7 @@
   <div id="crt"></div>
   <button class="sound-toggle" id="soundBtn">♪ ON</button>
   <button class="sound-toggle" id="crtBtn">▦ CRT</button>
+  <button class="sound-toggle" id="themeBtn" title="Cambia skin / Theme">🟣</button>
   <div id="langWrap"><button id="langBtn" title="Lingua / Language">🌐 IT</button><div id="langMenu" hidden></div></div>
   <header>
     <img class="logo" src="durov-neon-blue.png" width="50" height="50" alt="Survive Gram" decoding="async">
@@ -235,12 +246,15 @@
   const gridSvg=$("gridSvg"), scaleSvg=$("scaleSvg"), stage=$("stage"), deathFace=$("deathFace");
   const balanceVal=$("balanceVal"), multVal=$("multVal"), winVal=$("winVal");
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
-  const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
+  const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt"), themeBtn=$("themeBtn");
   const langBtn=$("langBtn"), langMenu=$("langMenu");
   const lbList=$("lbList"), nameInput=$("nameInput");
 
   let state={playing:false,busy:false,maxed:false,rows:START,cols:START,round:0,mult:1,bet:0,balance:1000,axis:"h"};
-  let deathPick=0;   // alterna gatto/faccia al game over (gatto, poi faccia, poi gatto...)
+  let deathPick=0;   // (skin viola) alterna gatto/faccia al game over
+  /* SKIN: "viola" (gatto/Durov viola) oppure "blu" (Durov blu, laser blu). Salvata in localStorage. */
+  let theme="viola"; try{ const s=localStorage.getItem("sg_theme"); if(s==="blu"||s==="viola") theme=s; }catch(e){}
+  const THEME_BG={viola:"#070310", blu:"#03070f"};
 
   /* ---------- AUDIO (Web Audio, nessun file) ---------- */
   let actx=null, soundOn=true;
@@ -490,7 +504,9 @@
     stage.classList.add("shake"); setTimeout(()=>stage.classList.remove("shake"),460);
     flash.style.transition="none"; flash.style.opacity="0.6";
     requestAnimationFrame(()=>{ flash.style.transition="opacity .5s"; flash.style.opacity="0"; });
-    setTimeout((deathPick++ % 2===0)?showDemonCat:showDemonFace,170);   // alterna: gatto, poi faccia neon, poi gatto...
+    // skin BLU -> sempre Durov blu; skin VIOLA -> alterna gatto demoniaco / Durov viola
+    const art=(theme==="blu") ? showDemonFace : ((deathPick++ % 2===0)?showDemonCat:showDemonFace);
+    setTimeout(art,170);
   }
   function showDemonCat(){
     const g=document.createElementNS(SVG_NS,"g");
@@ -499,6 +515,7 @@
     gridSvg.appendChild(g);
   }
   function showDemonFace(){
+    deathFace.src=(theme==="blu") ? "durov-neon-blue-lg.png" : "durov-neon-purple.png";
     deathFace.hidden=false;
     deathFace.classList.remove("show"); void deathFace.offsetWidth;   // reflow -> riavvia l'entrata
     deathFace.classList.add("show");
@@ -516,6 +533,18 @@
   soundBtn.addEventListener("click",()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?"♪ ON":"♪ OFF";});
   let crtOn=true;
   crtBtn.addEventListener("click",()=>{crtOn=!crtOn;crt.style.display=crtOn?"block":"none";crtBtn.textContent=crtOn?"▦ CRT":"▦ OFF";});
+  // toggle skin VIOLA <-> BLU
+  function applyTheme(t){
+    theme=t;
+    document.body.classList.toggle("theme-blue", t==="blu");
+    themeBtn.textContent = t==="blu" ? "🔵" : "🟣";
+    deathFace.src = (t==="blu") ? "durov-neon-blue-lg.png" : "durov-neon-purple.png";   // precarica l'immagine giusta
+    try{ localStorage.setItem("sg_theme", t); }catch(e){}
+    const bg=THEME_BG[t]||THEME_BG.viola;
+    const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content",bg);
+    try{ if(TG&&tgv("6.1")){ TG.setHeaderColor(bg); TG.setBackgroundColor(bg); } }catch(e){}
+  }
+  themeBtn.addEventListener("click",()=>applyTheme(theme==="blu"?"viola":"blu"));
   // selettore lingua
   function langLabel(){ return "🌐 "+I18N.cur.toUpperCase(); }
   function buildLangMenu(){
@@ -542,11 +571,11 @@
   LB.load();
   if(TG){
     try{ TG.ready(); TG.expand(); }catch(e){}
-    try{ if(tgv("6.1")){ TG.setHeaderColor("#070310"); TG.setBackgroundColor("#070310"); } }catch(e){}
     try{ if(tgv("7.7")&&TG.disableVerticalSwipes) TG.disableVerticalSwipes(); }catch(e){}
   }
   LB.cloudLoad();
   I18N.apply(document); langBtn.textContent=langLabel(); buildLangMenu(); setMsg("msg_intro");
+  applyTheme(theme);
   setBalance(1000);drawGrid();drawScale();
 })();
 </script>
