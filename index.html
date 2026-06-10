@@ -39,8 +39,14 @@
   }
   .arena{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
   .stage{
-    display:flex;gap:14px;align-items:stretch;
-    background:var(--panel);border:1px solid #1c1030;border-radius:8px;padding:16px;
+    /* la griglia (quadrata) e' l'elemento centrato; la scala laterale e' in assoluto
+       nel padding destro. Il padding sinistro eguaglia quello destro cosi' la GRIGLIA
+       resta centrata sullo schermo, con la scala come accento alla sua destra. */
+    --grid-size:min(560px,60vw);
+    --scale-gutter:calc(var(--grid-size)*0.2 + 14px);
+    position:relative;display:flex;justify-content:center;align-items:stretch;
+    background:var(--panel);border:1px solid #1c1030;border-radius:8px;
+    padding:16px var(--scale-gutter) 16px var(--scale-gutter);
     box-shadow:0 0 30px rgba(176,38,255,.08) inset;
   }
   .leaderboard{width:222px;background:var(--panel);border:1px solid #1c1030;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 30px rgba(176,38,255,.08) inset}
@@ -63,8 +69,11 @@
     30%,50%,70%{transform:translate(-7px,3px)}
     40%,60%{transform:translate(7px,-3px)}
   }
-  #gridSvg{display:block;width:min(560px,80vw);height:auto}
-  #scaleSvg{display:block;width:min(120px,15vw);height:auto}
+  #gridSvg{display:block;width:var(--grid-size,min(560px,60vw));height:auto;flex:none}
+  /* scala laterale: ancorata al bordo destro dello stage, alta quanto la griglia.
+     dimensioni esplicite legate a --grid-size (aspect 112:560 ~ 0.2) cosi' l'asse
+     copre tutta l'altezza della griglia e i cerchi del marker restano tondi. */
+  #scaleSvg{position:absolute;top:16px;right:5px;height:var(--grid-size,min(560px,60vw));width:calc(var(--grid-size,min(560px,60vw))*0.2);pointer-events:none}
   .cell{fill:#140320;stroke:var(--red);stroke-width:1.4;cursor:pointer;transition:fill .12s}
   .cell:hover{fill:#2e0a40}
   .cell.armed{animation:armpulse .6s ease-in-out infinite}
@@ -78,8 +87,14 @@
   .hud{margin-top:16px;width:100%;max-width:760px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
   .stat{background:var(--panel);border:1px solid #1a0c0c;border-radius:6px;padding:8px 14px;min-width:104px;text-align:center}
   .stat .lbl{font-size:10px;letter-spacing:2px;color:#7a6a6a;text-transform:uppercase}
-  .stat .val{font-size:20px;color:var(--green);text-shadow:0 0 6px var(--green-dim);margin-top:2px}
+  .stat .val{font-size:20px;color:var(--green);text-shadow:0 0 6px var(--green-dim);margin-top:2px;display:inline-block;transform-origin:center}
   .stat .val.red{color:var(--red);text-shadow:0 0 6px var(--red)}
+  /* pop/zoom della VINCITA ad ogni schivata (riavviato via reflow in survive()) */
+  .stat .val.winpop{animation:winpop .32s cubic-bezier(.2,1.4,.35,1)}
+  @keyframes winpop{0%{transform:scale(1)}45%{transform:scale(1.32);text-shadow:0 0 14px var(--green)}100%{transform:scale(1)}}
+  /* pulse piu' sobrio del moltiplicatore */
+  .stat .val.multpop{animation:multpop .32s ease-out}
+  @keyframes multpop{0%{transform:scale(1)}45%{transform:scale(1.14);text-shadow:0 0 12px var(--red-glow)}100%{transform:scale(1)}}
   .betbox input{
     width:80px;background:#0a0705;border:1px solid var(--red-dim);color:var(--green);
     font-family:inherit;font-size:16px;padding:6px;border-radius:4px;text-align:center;
@@ -160,7 +175,7 @@
   <div class="arena">
     <div class="stage" id="stage">
       <svg id="gridSvg" width="560" height="560" viewBox="0 0 560 560"></svg>
-      <svg id="scaleSvg" width="120" height="560" viewBox="0 0 120 560"></svg>
+      <svg id="scaleSvg" viewBox="0 0 112 560" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
   </div>
 
@@ -312,6 +327,13 @@
   function setBalance(v){state.balance=v;balanceVal.textContent=v.toFixed(2);}
   function setMult(){multVal.textContent=fmt(state.mult)+"x";}
   function setWin(){winVal.textContent=(state.bet*state.mult).toFixed(2);}
+  /* zoom/pop della VINCITA (e pulse del moltiplicatore) ad ogni avanzamento.
+     Toglie la classe, forza un reflow, la rimette: cosi' l'animazione riparte ogni round. */
+  function popWin(){
+    winVal.classList.remove("winpop"); multVal.classList.remove("multpop");
+    void winVal.offsetWidth;                 // reflow forzato -> riavvia l'animazione
+    winVal.classList.add("winpop"); multVal.classList.add("multpop");
+  }
 
   /* messaggi localizzati: memorizza chiave+parametri per ri-tradurre al cambio lingua */
   let _mk="msg_intro", _mp={};
@@ -328,22 +350,30 @@
 
   // Classifica: logica condivisa in lb.js (window.LB) — UI nella pagina classifica.html
 
-  /* ---------- SCALA LATERALE ---------- */
+  /* ---------- SCALA LATERALE (moltiplicatore) ----------
+     viewBox 112x560: asse verticale a sinistra, tacche allineate ai livelli,
+     numero del round a sinistra dell'asse, moltiplicatore a destra (baseline
+     allineata alla tacca), marker del livello corrente ben visibile. */
+  const SCALE_X=22, SCALE_TOP=18, SCALE_BOT=BOARD-18;   // 18..542
   function drawScale(){
     scaleSvg.innerHTML="";
-    const top=16,bot=BOARD-16;
-    const yFor=s=>bot-(s/MAX_ROUNDS)*(bot-top);
-    scaleSvg.appendChild(el("line",{x1:14,y1:top,x2:14,y2:bot,stroke:"#3a2a2a","stroke-width":2}));
+    const yFor=s=>SCALE_BOT-(s/MAX_ROUNDS)*(SCALE_BOT-SCALE_TOP);
+    // asse verticale
+    scaleSvg.appendChild(el("line",{x1:SCALE_X,y1:SCALE_TOP,x2:SCALE_X,y2:SCALE_BOT,stroke:"#3a2350","stroke-width":2,"stroke-linecap":"round"}));
+    // tacche + etichette
     [2,6,10,14,18].forEach(s=>{
       const y=yFor(s);
-      scaleSvg.appendChild(el("line",{x1:8,y1:y,x2:20,y2:y,stroke:"#7a6a6a","stroke-width":2}));
-      const tn=el("text",{x:0,y:y-6,fill:"#5a4a4a","font-size":11,"font-family":"monospace"});tn.textContent=s;
+      scaleSvg.appendChild(el("line",{x1:SCALE_X-7,y1:y,x2:SCALE_X+7,y2:y,stroke:"#6b5a86","stroke-width":2,"stroke-linecap":"round"}));
+      const tn=el("text",{x:SCALE_X-12,y:y+3.5,fill:"#6f5d88","font-size":10,"font-family":"monospace","text-anchor":"end"});tn.textContent=s;
       scaleSvg.appendChild(tn);
-      const tm=el("text",{x:26,y:y+4,fill:"#7a6a6a","font-size":12,"font-family":"monospace"});tm.textContent=fmt(multAfter(s))+"x";
+      const tm=el("text",{x:SCALE_X+13,y:y+4,fill:"#a791c4","font-size":13,"font-family":"monospace","text-anchor":"start"});tm.textContent=fmt(multAfter(s))+"x";
       scaleSvg.appendChild(tm);
     });
+    // marker del livello corrente: anello + punto pieno, con piccola tacca-guida
     const y=yFor(state.round);
-    scaleSvg.appendChild(el("circle",{cx:14,cy:y,r:5,fill:"var(--green)",filter:"drop-shadow(0 0 5px var(--green))"}));
+    scaleSvg.appendChild(el("line",{x1:SCALE_X+9,y1:y,x2:SCALE_X+11,y2:y,stroke:"var(--green)","stroke-width":2,opacity:0.6}));
+    scaleSvg.appendChild(el("circle",{cx:SCALE_X,cy:y,r:6.5,fill:"none",stroke:"var(--green)","stroke-width":2,opacity:0.55}));
+    scaleSvg.appendChild(el("circle",{cx:SCALE_X,cy:y,r:4,fill:"var(--green)",filter:"drop-shadow(0 0 5px var(--green))"}));
   }
 
   /* ---------- GRIGLIA ---------- */
@@ -410,7 +440,7 @@
     state.round++;
     if(state.axis==="h"){ state.rows--; state.axis="v"; }
     else                { state.cols--; state.axis="h"; }
-    state.mult=multAfter(state.round); setMult(); setWin();
+    state.mult=multAfter(state.round); setMult(); setWin(); popWin();
     if(state.round>=MAX_ROUNDS){
       state.maxed=true; drawGrid(); drawScale(); state.busy=false;
       setMsg("msg_max",{mult:fmt(state.mult)});
