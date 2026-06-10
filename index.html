@@ -143,6 +143,25 @@
     animation:crtscan 7s linear infinite;}
   @keyframes crtscan{0%{top:-32%}100%{top:100%}}
   @keyframes crtflicker{0%{opacity:.96}3%{opacity:1}6%{opacity:.95}9%{opacity:1}48%{opacity:.98}49%{opacity:.92}50%{opacity:1}100%{opacity:.98}}
+  /* ---- MOBILE: griglia piu' grande (niente gutter speculare a sinistra) + HUD compatto a 2 colonne ---- */
+  @media (max-width:640px){
+    body{padding:8px}
+    .stage{
+      --grid-size:min(520px, calc((100vw - 40px)/1.2));   /* usa quasi tutta la larghezza disponibile */
+      padding:10px;
+      padding-right:calc(var(--grid-size)*0.2 + 8px);     /* spazio per la scala solo a destra */
+      justify-content:flex-start;
+    }
+    #scaleSvg{top:10px;right:4px}
+    /* la faccia-morte si centra sulla GRIGLIA (lo stage e' asimmetrico su mobile) */
+    #deathFace{left:calc(10px + var(--grid-size)*0.5);top:calc(10px + var(--grid-size)*0.5)}
+    .hud{gap:8px;margin-top:14px}
+    .stat{min-width:0;flex:1 1 calc(50% - 6px);padding:6px 8px}
+    .stat .lbl{font-size:9px;letter-spacing:1px}
+    .stat .val{font-size:17px}
+    .betbox input{width:100%}
+    #startBtn,#cashBtn{flex:1 1 calc(50% - 6px);padding:11px 8px;font-size:14px;letter-spacing:1px}
+  }
 </style>
 </head>
 <body>
@@ -230,6 +249,7 @@
   const lbList=$("lbList"), nameInput=$("nameInput");
 
   let state={playing:false,busy:false,maxed:false,rows:START,cols:START,round:0,mult:1,bet:0,balance:1000,axis:"h"};
+  let deathPick=0;   // alterna gatto/faccia al game over (gatto, poi faccia, poi gatto...)
 
   /* ---------- AUDIO (Web Audio, nessun file) ---------- */
   let actx=null, soundOn=true;
@@ -481,7 +501,7 @@
     stage.classList.add("shake"); setTimeout(()=>stage.classList.remove("shake"),460);
     flash.style.transition="none"; flash.style.opacity="0.6";
     requestAnimationFrame(()=>{ flash.style.transition="opacity .5s"; flash.style.opacity="0"; });
-    setTimeout(Math.random()<0.5?showDemonCat:showDemonFace,170);   // random: gatto o faccia neon
+    setTimeout((deathPick++ % 2===0)?showDemonCat:showDemonFace,170);   // alterna: gatto, poi faccia neon, poi gatto...
   }
   function showDemonCat(){
     const g=document.createElementNS(SVG_NS,"g");
