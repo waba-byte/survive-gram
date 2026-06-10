@@ -37,18 +37,17 @@
     color:var(--green);font-size:clamp(14px,4vw,26px);letter-spacing:clamp(1px,1vw,6px);font-weight:700;
     text-shadow:0 0 8px var(--green-dim);
   }
-  .arena{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+  .arena{display:flex;justify-content:center;width:100%}
   .stage{
-    /* la griglia (quadrata) e' l'elemento centrato; la scala laterale e' in assoluto
-       nel padding destro. Il padding sinistro eguaglia quello destro cosi' la GRIGLIA
-       resta centrata sullo schermo, con la scala come accento alla sua destra. */
-    --grid-size:min(560px,60vw);
-    --scale-gutter:calc(var(--grid-size)*0.2 + 14px);
-    position:relative;display:flex;justify-content:center;align-items:stretch;
+    /* layout a colonna: griglia (quadrata, piena larghezza) sopra, scala moltiplicatore
+       ORIZZONTALE sotto. Cosi' la griglia si allarga su tutta la larghezza disponibile. */
+    position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;
+    width:100%;max-width:584px;
     background:var(--panel);border:1px solid #1c1030;border-radius:8px;
-    padding:16px var(--scale-gutter) 16px var(--scale-gutter);
+    padding:14px;
     box-shadow:0 0 30px rgba(176,38,255,.08) inset;
   }
+  .grid-wrap{position:relative;width:100%;max-width:560px;line-height:0}
   .leaderboard{width:222px;background:var(--panel);border:1px solid #1c1030;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 30px rgba(176,38,255,.08) inset}
   .lb-head{color:var(--green);letter-spacing:3px;font-size:15px;text-align:center;text-shadow:0 0 6px var(--green-dim)}
   .lb-me{display:flex;align-items:center;gap:8px;justify-content:center}
@@ -69,11 +68,9 @@
     30%,50%,70%{transform:translate(-7px,3px)}
     40%,60%{transform:translate(7px,-3px)}
   }
-  #gridSvg{display:block;width:var(--grid-size,min(560px,60vw));height:auto;flex:none}
-  /* scala laterale: ancorata al bordo destro dello stage, alta quanto la griglia.
-     dimensioni esplicite legate a --grid-size (aspect 112:560 ~ 0.2) cosi' l'asse
-     copre tutta l'altezza della griglia e i cerchi del marker restano tondi. */
-  #scaleSvg{position:absolute;top:16px;right:5px;height:var(--grid-size,min(560px,60vw));width:calc(var(--grid-size,min(560px,60vw))*0.2);pointer-events:none}
+  #gridSvg{display:block;width:100%;height:auto}
+  /* scala moltiplicatore: barra ORIZZONTALE a piena larghezza, sotto la griglia */
+  #scaleSvg{display:block;width:100%;max-width:560px;height:auto;pointer-events:none}
   .cell{fill:#140320;stroke:var(--red);stroke-width:1.4;cursor:pointer;transition:fill .12s}
   .cell:hover{fill:#2e0a40}
   .cell.armed{animation:armpulse .6s ease-in-out infinite}
@@ -86,7 +83,7 @@
   @keyframes eyeflick{0%,40%,52%,90%,100%{opacity:1}46%{opacity:.2}48%{opacity:1}94%{opacity:.3}}
   /* faccia neon viola: alternata in modo random al gatto demoniaco al game over.
      mix-blend-mode:screen elimina lo sfondo nero del JPG, resta solo neon+glow. */
-  #deathFace{position:absolute;left:50%;top:50%;width:calc(var(--grid-size,min(560px,60vw))*0.72);aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;z-index:3;filter:drop-shadow(0 0 7px var(--red)) drop-shadow(0 0 20px var(--red-glow))}
+  #deathFace{position:absolute;left:50%;top:50%;width:72%;aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;z-index:3;filter:drop-shadow(0 0 7px var(--red)) drop-shadow(0 0 20px var(--red-glow))}
   #deathFace[hidden]{display:none}
   #deathFace.show{animation:facein .55s cubic-bezier(.2,1.5,.4,1) both}
   @keyframes facein{0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(-8deg)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(3deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}}
@@ -143,18 +140,10 @@
     animation:crtscan 7s linear infinite;}
   @keyframes crtscan{0%{top:-32%}100%{top:100%}}
   @keyframes crtflicker{0%{opacity:.96}3%{opacity:1}6%{opacity:.95}9%{opacity:1}48%{opacity:.98}49%{opacity:.92}50%{opacity:1}100%{opacity:.98}}
-  /* ---- MOBILE: griglia piu' grande (niente gutter speculare a sinistra) + HUD compatto a 2 colonne ---- */
+  /* ---- MOBILE: HUD compatto a 2 colonne (la griglia e' gia' a piena larghezza) ---- */
   @media (max-width:640px){
     body{padding:8px}
-    .stage{
-      --grid-size:min(520px, calc((100vw - 40px)/1.2));   /* usa quasi tutta la larghezza disponibile */
-      padding:10px;
-      padding-right:calc(var(--grid-size)*0.2 + 8px);     /* spazio per la scala solo a destra */
-      justify-content:flex-start;
-    }
-    #scaleSvg{top:10px;right:4px}
-    /* la faccia-morte si centra sulla GRIGLIA (lo stage e' asimmetrico su mobile) */
-    #deathFace{left:calc(10px + var(--grid-size)*0.5);top:calc(10px + var(--grid-size)*0.5)}
+    .stage{padding:10px;gap:10px}
     .hud{gap:8px;margin-top:14px}
     .stat{min-width:0;flex:1 1 calc(50% - 6px);padding:6px 8px}
     .stat .lbl{font-size:9px;letter-spacing:1px}
@@ -177,9 +166,11 @@
 
   <div class="arena">
     <div class="stage" id="stage">
-      <svg id="gridSvg" width="560" height="560" viewBox="0 0 560 560"></svg>
-      <svg id="scaleSvg" viewBox="0 0 112 560" preserveAspectRatio="xMidYMid meet"></svg>
-      <img id="deathFace" src="durov-neon-purple.png" alt="" decoding="async" hidden>
+      <div class="grid-wrap">
+        <svg id="gridSvg" width="560" height="560" viewBox="0 0 560 560"></svg>
+        <img id="deathFace" src="durov-neon-purple.png" alt="" decoding="async" hidden>
+      </div>
+      <svg id="scaleSvg" viewBox="0 0 560 52" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
   </div>
 
@@ -355,30 +346,28 @@
 
   // Classifica: logica condivisa in lb.js (window.LB) — UI nella pagina classifica.html
 
-  /* ---------- SCALA LATERALE (moltiplicatore) ----------
-     viewBox 112x560: asse verticale a sinistra, tacche allineate ai livelli,
-     numero del round a sinistra dell'asse, moltiplicatore a destra (baseline
-     allineata alla tacca), marker del livello corrente ben visibile. */
-  const SCALE_X=22, SCALE_TOP=18, SCALE_BOT=BOARD-18;   // 18..542
+  /* ---------- SCALA MOLTIPLICATORE (barra ORIZZONTALE, viewBox 560x52) ----------
+     asse orizzontale: round 0..18 da sinistra a destra; moltiplicatore sopra la tacca,
+     numero del round sotto; marker del livello corrente sull'asse. */
+  const AX_L=46, AX_R=514, AX_Y=29;
   function drawScale(){
     scaleSvg.innerHTML="";
-    const yFor=s=>SCALE_BOT-(s/MAX_ROUNDS)*(SCALE_BOT-SCALE_TOP);
-    // asse verticale
-    scaleSvg.appendChild(el("line",{x1:SCALE_X,y1:SCALE_TOP,x2:SCALE_X,y2:SCALE_BOT,stroke:"#3a2350","stroke-width":2,"stroke-linecap":"round"}));
+    const xFor=s=>AX_L+(s/MAX_ROUNDS)*(AX_R-AX_L);
+    // asse orizzontale
+    scaleSvg.appendChild(el("line",{x1:AX_L,y1:AX_Y,x2:AX_R,y2:AX_Y,stroke:"#3a2350","stroke-width":2,"stroke-linecap":"round"}));
     // tacche + etichette
     [2,6,10,14,18].forEach(s=>{
-      const y=yFor(s);
-      scaleSvg.appendChild(el("line",{x1:SCALE_X-7,y1:y,x2:SCALE_X+7,y2:y,stroke:"#6b5a86","stroke-width":2,"stroke-linecap":"round"}));
-      const tn=el("text",{x:SCALE_X-12,y:y+3.5,fill:"#6f5d88","font-size":10,"font-family":"monospace","text-anchor":"end"});tn.textContent=s;
+      const x=xFor(s);
+      scaleSvg.appendChild(el("line",{x1:x,y1:AX_Y-6,x2:x,y2:AX_Y+6,stroke:"#6b5a86","stroke-width":2,"stroke-linecap":"round"}));
+      const tn=el("text",{x:x,y:AX_Y+19,fill:"#6f5d88","font-size":11,"font-family":"monospace","text-anchor":"middle"});tn.textContent=s;
       scaleSvg.appendChild(tn);
-      const tm=el("text",{x:SCALE_X+13,y:y+4,fill:"#a791c4","font-size":13,"font-family":"monospace","text-anchor":"start"});tm.textContent=fmt(multAfter(s))+"x";
+      const tm=el("text",{x:x,y:AX_Y-11,fill:"#a791c4","font-size":13,"font-family":"monospace","text-anchor":"middle"});tm.textContent=fmt(multAfter(s))+"x";
       scaleSvg.appendChild(tm);
     });
-    // marker del livello corrente: anello + punto pieno, con piccola tacca-guida
-    const y=yFor(state.round);
-    scaleSvg.appendChild(el("line",{x1:SCALE_X+9,y1:y,x2:SCALE_X+11,y2:y,stroke:"var(--green)","stroke-width":2,opacity:0.6}));
-    scaleSvg.appendChild(el("circle",{cx:SCALE_X,cy:y,r:6.5,fill:"none",stroke:"var(--green)","stroke-width":2,opacity:0.55}));
-    scaleSvg.appendChild(el("circle",{cx:SCALE_X,cy:y,r:4,fill:"var(--green)",filter:"drop-shadow(0 0 5px var(--green))"}));
+    // marker del livello corrente: anello + punto pieno
+    const x=xFor(state.round);
+    scaleSvg.appendChild(el("circle",{cx:x,cy:AX_Y,r:6.5,fill:"none",stroke:"var(--green)","stroke-width":2,opacity:0.55}));
+    scaleSvg.appendChild(el("circle",{cx:x,cy:AX_Y,r:4,fill:"var(--green)",filter:"drop-shadow(0 0 5px var(--green))"}));
   }
 
   /* ---------- GRIGLIA ---------- */
