@@ -32,7 +32,7 @@
     user-select:none;-webkit-user-select:none;overflow-x:hidden;
   }
   header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-  header .logo{filter:drop-shadow(0 0 6px var(--green))}
+  header .logo{width:clamp(36px,10vw,50px);aspect-ratio:1/1;object-fit:contain;filter:drop-shadow(0 0 5px var(--green-dim))}
   header h1{
     color:var(--green);font-size:clamp(14px,4vw,26px);letter-spacing:clamp(1px,1vw,6px);font-weight:700;
     text-shadow:0 0 8px var(--green-dim);
@@ -84,6 +84,12 @@
   @keyframes catin{0%{opacity:0;transform:scale(.15) rotate(-10deg)}55%{opacity:1;transform:scale(1.12) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
   .demoncat .eye{animation:eyeflick 1.3s steps(1,end) infinite}
   @keyframes eyeflick{0%,40%,52%,90%,100%{opacity:1}46%{opacity:.2}48%{opacity:1}94%{opacity:.3}}
+  /* faccia neon viola: alternata in modo random al gatto demoniaco al game over.
+     mix-blend-mode:screen elimina lo sfondo nero del JPG, resta solo neon+glow. */
+  #deathFace{position:absolute;left:50%;top:50%;width:calc(var(--grid-size,min(560px,60vw))*0.72);aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;z-index:3;filter:drop-shadow(0 0 7px var(--red)) drop-shadow(0 0 20px var(--red-glow))}
+  #deathFace[hidden]{display:none}
+  #deathFace.show{animation:facein .55s cubic-bezier(.2,1.5,.4,1) both}
+  @keyframes facein{0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(-8deg)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(3deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}}
   .hud{margin-top:16px;width:100%;max-width:760px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
   .stat{background:var(--panel);border:1px solid #1a0c0c;border-radius:6px;padding:8px 14px;min-width:104px;text-align:center}
   .stat .lbl{font-size:10px;letter-spacing:2px;color:#7a6a6a;text-transform:uppercase}
@@ -146,29 +152,7 @@
   <button class="sound-toggle" id="crtBtn">▦ CRT</button>
   <div id="langWrap"><button id="langBtn" title="Lingua / Language">🌐 IT</button><div id="langMenu" hidden></div></div>
   <header>
-    <svg class="logo" width="34" height="34" viewBox="0 0 40 40">
-      <!-- spalle / busto -->
-      <path d="M17.5 30 C13 30.5 7 32.5 6 40" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"/>
-      <path d="M22.5 30 C27 30.5 33 32.5 34 40" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"/>
-      <!-- collo -->
-      <path d="M17.6 27.5 L17.6 30" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"/>
-      <path d="M22.4 27.5 L22.4 30" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"/>
-      <!-- testa calva -->
-      <path d="M20 6 C26 6 30 11 30 17 C30 23 26 28 20 28 C14 28 10 23 10 17 C10 11 14 6 20 6 Z" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/>
-      <!-- orecchie -->
-      <path d="M10 16.5 Q8 18 10 20" fill="none" stroke="var(--green)" stroke-width="1.4" stroke-linecap="round"/>
-      <path d="M30 16.5 Q32 18 30 20" fill="none" stroke="var(--green)" stroke-width="1.4" stroke-linecap="round"/>
-      <!-- sopracciglia -->
-      <path d="M13.6 15.2 L17.6 15.7" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M26.4 15.2 L22.4 15.7" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
-      <!-- occhi -->
-      <path d="M13.8 18 Q15.6 16.8 17.4 18 Q15.6 19.1 13.8 18 Z" fill="var(--green)"/>
-      <path d="M22.6 18 Q24.4 16.8 26.2 18 Q24.4 19.1 22.6 18 Z" fill="var(--green)"/>
-      <!-- naso -->
-      <path d="M19.9 19 L19.2 21.7 Q20 22.3 20.9 21.7" fill="none" stroke="var(--green)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- bocca seria -->
-      <path d="M16.8 24.4 Q20 24.1 23.2 24.4" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
+    <img class="logo" src="durov-neon-blue.png" width="50" height="50" alt="Survive Gram" decoding="async">
     <h1>Survive Gram</h1>
   </header>
 
@@ -176,6 +160,7 @@
     <div class="stage" id="stage">
       <svg id="gridSvg" width="560" height="560" viewBox="0 0 560 560"></svg>
       <svg id="scaleSvg" viewBox="0 0 112 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <img id="deathFace" src="durov-neon-purple.png" alt="" decoding="async" hidden>
     </div>
   </div>
 
@@ -237,7 +222,7 @@
   `;
 
   const $=id=>document.getElementById(id);
-  const gridSvg=$("gridSvg"), scaleSvg=$("scaleSvg"), stage=$("stage");
+  const gridSvg=$("gridSvg"), scaleSvg=$("scaleSvg"), stage=$("stage"), deathFace=$("deathFace");
   const balanceVal=$("balanceVal"), multVal=$("multVal"), winVal=$("winVal");
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
   const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
@@ -380,6 +365,7 @@
   let geo={cs:0,gap:6,ox:0,oy:0};
   function drawGrid(){
     gridSvg.innerHTML="";
+    if(deathFace){ deathFace.hidden=true; deathFace.classList.remove("show"); }   // azzera la faccia-morte
     const R=state.rows,C=state.cols,gap=6;
     const cs=Math.floor(Math.min((BOARD-gap*(C+1))/C,(BOARD-gap*(R+1))/R));
     const totW=C*cs+gap*(C-1), totH=R*cs+gap*(R-1);
@@ -495,13 +481,18 @@
     stage.classList.add("shake"); setTimeout(()=>stage.classList.remove("shake"),460);
     flash.style.transition="none"; flash.style.opacity="0.6";
     requestAnimationFrame(()=>{ flash.style.transition="opacity .5s"; flash.style.opacity="0"; });
-    setTimeout(showDemonCat,170);
+    setTimeout(Math.random()<0.5?showDemonCat:showDemonFace,170);   // random: gatto o faccia neon
   }
   function showDemonCat(){
     const g=document.createElementNS(SVG_NS,"g");
     g.setAttribute("class","demoncat");
     g.innerHTML=CAT_SVG;
     gridSvg.appendChild(g);
+  }
+  function showDemonFace(){
+    deathFace.hidden=false;
+    deathFace.classList.remove("show"); void deathFace.offsetWidth;   // reflow -> riavvia l'entrata
+    deathFace.classList.add("show");
   }
   function flashSafe(x,y){
     const c=el("circle",{cx:x,cy:y,r:6,fill:"none",stroke:"var(--green)","stroke-width":3});
