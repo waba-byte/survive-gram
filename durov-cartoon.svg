@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="320" height="384">
+  <!-- sfondo -->
+  <rect width="200" height="240" rx="12" fill="#ECE6DC"/>
+
+  <!-- spalle / busto -->
+  <path d="M46 240 C48 208 76 198 100 198 C124 198 152 208 154 240 Z" fill="#E8B48C"/>
+  <!-- collo -->
+  <path d="M84 200 L84 150 L116 150 L116 200 Z" fill="#E0A47E"/>
+  <path d="M82 158 Q100 178 118 158 L118 150 L82 150 Z" fill="#D89A72"/>
+
+  <!-- orecchie -->
+  <ellipse cx="56" cy="106" rx="9" ry="13" fill="#E8B48C"/>
+  <ellipse cx="144" cy="106" rx="9" ry="13" fill="#E8B48C"/>
+  <path d="M53 102 q4 4 2 10" fill="none" stroke="#D89A72" stroke-width="2"/>
+  <path d="M147 102 q-4 4 -2 10" fill="none" stroke="#D89A72" stroke-width="2"/>
+
+  <!-- capelli dietro (calotta) -->
+  <path d="M52 120 C36 92 38 48 66 32 C86 20 114 20 134 32 C162 48 164 92 148 120 Z" fill="#3A2718"/>
+
+  <!-- viso -->
+  <path d="M100 42 C127 42 145 64 145 92 C145 120 131 150 100 158 C69 150 55 120 55 92 C55 64 73 42 100 42 Z" fill="#E8B48C"/>
+  <!-- ombra del viso (lato suo sinistro / nostra destra) -->
+  <path d="M100 44 C127 44 145 66 145 92 C145 120 131 150 100 158 C120 150 130 120 130 92 C130 66 118 48 100 44 Z" fill="#DCA078" opacity="0.4"/>
+
+  <!-- capelli davanti (frangia / attaccatura piu' piena) -->
+  <path d="M54 100 C50 62 58 40 82 39 C95 38 101 47 116 44 C136 41 144 62 146 100 C140 72 126 60 110 63 C98 64 90 68 80 66 C66 64 58 78 54 100 Z" fill="#3A2718"/>
+  <path d="M70 42 C86 32 112 32 128 42 C112 37 90 38 78 48 Z" fill="#2C1D11"/>
+
+  <!-- sopracciglia -->
+  <path d="M67 86 C76 80 88 81 95 86 C87 83 76 84 67 90 Z" fill="#2C1D11"/>
+  <path d="M133 86 C124 80 112 81 105 86 C113 83 124 84 133 90 Z" fill="#2C1D11"/>
+
+  <!-- occhi (sguardo di lato, rilassati) -->
+  <ellipse cx="82" cy="97" rx="7.6" ry="4" fill="#F5F2EC"/>
+  <ellipse cx="118" cy="97" rx="7.6" ry="4" fill="#F5F2EC"/>
+  <circle cx="85" cy="97.5" r="3.4" fill="#5A3D28"/>
+  <circle cx="121" cy="97.5" r="3.4" fill="#5A3D28"/>
+  <circle cx="86" cy="97.5" r="1.7" fill="#1A1008"/>
+  <circle cx="122" cy="97.5" r="1.7" fill="#1A1008"/>
+  <path d="M74 95 Q82 91.5 90.5 94.5" fill="none" stroke="#3A2718" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M110 94.5 Q118 91.5 126 95" fill="none" stroke="#3A2718" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- naso -->
+  <path d="M99 96 C98 106 96 114 94 118 C97 122 103 122 106 118" fill="none" stroke="#D08C64" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- barba piena -->
+  <path d="M55 100 C54 126 60 150 74 162 C84 170 92 173 100 173 C108 173 116 170 126 162 C140 150 146 126 145 100 C141 122 134 130 126 134 C117 139 108 140 100 140 C92 140 83 139 74 134 C66 130 59 122 55 100 Z" fill="#3A2718"/>
+  <!-- baffi (uniti alla barba) -->
+  <path d="M82 129 C89 125 96 128 100 130 C104 128 111 125 118 129 C112 133 106 134 100 134 C94 134 88 133 82 129 Z" fill="#3A2718"/>
+  <!-- bocca -->
+  <path d="M92 140 Q100 144 108 140 Q100 147 92 140 Z" fill="#B5705A"/>
+
+  <!-- riflessi capelli -->
+  <path d="M72 40 C88 32 112 32 126 40" fill="none" stroke="#5A4030" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+  <path d="M60 72 C58 56 64 44 78 40" fill="none" stroke="#5A4030" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+</svg>
