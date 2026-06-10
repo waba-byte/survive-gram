@@ -384,24 +384,27 @@
     scaleSvg.appendChild(el("circle",{cx:x,cy:AX_Y,r:4,fill:"var(--green)",filter:"drop-shadow(0 0 5px var(--green))"}));
   }
 
-  /* ---------- GRIGLIA ---------- */
-  let geo={cs:0,gap:6,ox:0,oy:0};
+  /* ---------- GRIGLIA (riempie sempre il riquadro; celle = board/numero, non quadrate se righe!=colonne) ---------- */
+  const GAP=6;
+  let geo={cw:0,ch:0};
+  function dims(R,C){ return { cw:(BOARD-GAP*(C+1))/C, ch:(BOARD-GAP*(R+1))/R }; }
+  function cellXY(r,c,cw,ch){ return { x:GAP+c*(cw+GAP), y:GAP+r*(ch+GAP) }; }
   function drawGrid(){
     gridSvg.innerHTML="";
     if(deathFace){ deathFace.hidden=true; deathFace.classList.remove("show"); }   // azzera la faccia-morte
-    const R=state.rows,C=state.cols,gap=6;
-    const cs=Math.floor(Math.min((BOARD-gap*(C+1))/C,(BOARD-gap*(R+1))/R));
-    const totW=C*cs+gap*(C-1), totH=R*cs+gap*(R-1);
-    const ox=(BOARD-totW)/2, oy=(BOARD-totH)/2;
-    geo={cs,gap,ox,oy};
+    const R=state.rows,C=state.cols;
+    const {cw,ch}=dims(R,C); geo={cw,ch};
     for(let r=0;r<R;r++)for(let c=0;c<C;c++){
-      const rect=el("rect",{x:ox+c*(cs+gap),y:oy+r*(cs+gap),width:cs,height:cs,rx:2,class:"cell"});
+      const p=cellXY(r,c,cw,ch);
+      const rect=el("rect",{x:p.x,y:p.y,width:cw,height:ch,rx:2,class:"cell"});
       rect.dataset.r=r;rect.dataset.c=c;rect.addEventListener("click",onCellClick);
       gridSvg.appendChild(rect);
     }
   }
-  function center(r,c){const{cs,gap,ox,oy}=geo;return{x:ox+c*(cs+gap)+cs/2,y:oy+r*(cs+gap)+cs/2};}
-  function bounds(){const{cs,gap,ox,oy}=geo;return{x0:ox-8,x1:ox+state.cols*(cs+gap)-gap+8,y0:oy-8,y1:oy+state.rows*(cs+gap)-gap+8};}
+  function center(r,c){const{cw,ch}=geo;return{x:GAP+c*(cw+GAP)+cw/2,y:GAP+r*(ch+GAP)+ch/2};}
+  function bounds(){const{cw,ch}=geo;return{
+    x0:GAP-8, x1:GAP+(state.cols-1)*(cw+GAP)+cw+8,
+    y0:GAP-8, y1:GAP+(state.rows-1)*(ch+GAP)+ch+8 };}
 
   /* ---------- GIOCO ---------- */
   function onCellClick(e){
@@ -422,7 +425,7 @@
       let pos;
       if(axis==="h"){ const y=center(hitIndex,0).y; pos={y}; }
       else { const x=center(0,hitIndex).x; pos={x}; }
-      const sw=Math.max(4,geo.cs*0.5);
+      const sw=Math.max(4,(axis==="h"?geo.ch:geo.cw)*0.5);
       const line=el("line",axis==="h"
         ?{x1:b.x0,y1:pos.y,x2:b.x0,y2:pos.y,class:"laser",stroke:"var(--red-glow)","stroke-width":sw}
         :{x1:pos.x,y1:b.y0,x2:pos.x,y2:b.y0,class:"laser",stroke:"var(--red-glow)","stroke-width":sw});
@@ -439,24 +442,56 @@
       function resolve(line){
         const hit=axis==="h"?(hitIndex===selR):(hitIndex===selC);
         if(hit){ explode(ctr.x,ctr.y); deathFx(); gameOver(); }
-        else{ flashSafe(ctr.x,ctr.y); sfx.safe(); setTimeout(()=>{ if(line.parentNode)line.remove(); survive(); },240); }
+        else{ flashSafe(ctr.x,ctr.y); sfx.safe(); setTimeout(()=>{ if(line.parentNode)line.remove(); survive(hitIndex); },240); }
       }
     },280);
   }
 
-  function survive(){
+  function survive(cutIndex){
     haptic("dodge");
+    const cutAxis=state.axis, oldR=state.rows, oldC=state.cols;
     state.round++;
-    if(state.axis==="h"){ state.rows--; state.axis="v"; }
-    else                { state.cols--; state.axis="h"; }
-    state.mult=multAfter(state.round); setMult(); setWin(); popWin();
-    if(state.round>=MAX_ROUNDS){
-      state.maxed=true; drawGrid(); drawScale(); state.busy=false;
-      setMsg("msg_max",{mult:fmt(state.mult)});
-      return;
-    }
-    drawGrid(); drawScale(); state.busy=false;
-    setMsg("msg_dodged",{mult:fmt(state.mult),axis:state.axis});
+    if(cutAxis==="h"){ state.rows--; state.axis="v"; }
+    else             { state.cols--; state.axis="h"; }
+    state.mult=multAfter(state.round); setMult(); setWin(); popWin(); drawScale();
+    const finish=()=>{
+      drawGrid(); state.busy=false;
+      if(state.round>=MAX_ROUNDS){ state.maxed=true; setMsg("msg_max",{mult:fmt(state.mult)}); }
+      else setMsg("msg_dodged",{mult:fmt(state.mult),axis:state.axis});
+    };
+    animateCut(cutAxis, cutIndex, oldR, oldC, state.rows, state.cols, finish);
+  }
+  /* la riga/colonna del laser collassa e i due lati si chiudono verso l'interno
+     (le celle restanti crescono e si riposizionano per riempire di nuovo il riquadro). */
+  function animateCut(axis, cut, oldR, oldC, newR, newC, done){
+    const o=dims(oldR,oldC), n=dims(newR,newC);
+    const items=Array.from(gridSvg.querySelectorAll(".cell")).map(rect=>{
+      rect.classList.remove("armed");
+      const r=+rect.dataset.r, c=+rect.dataset.c;
+      const cutThis = axis==="h" ? (r===cut) : (c===cut);
+      const p0=cellXY(r,c,o.cw,o.ch);
+      if(cutThis) return {rect,cut:true,p0};
+      const nr = axis==="h" ? (r<cut?r:r-1) : r;
+      const nc = axis==="v" ? (c<cut?c:c-1) : c;
+      return {rect,cut:false,p0,p1:cellXY(nr,nc,n.cw,n.ch)};
+    });
+    const dur=340, t0=performance.now();
+    (function step(t){
+      const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3);   // easeOutCubic
+      items.forEach(a=>{
+        if(a.cut){
+          if(axis==="h"){ a.rect.setAttribute("height",Math.max(0,o.ch*(1-e)).toFixed(2)); a.rect.setAttribute("y",(a.p0.y+o.ch/2*e).toFixed(2)); }
+          else          { a.rect.setAttribute("width", Math.max(0,o.cw*(1-e)).toFixed(2)); a.rect.setAttribute("x",(a.p0.x+o.cw/2*e).toFixed(2)); }
+          a.rect.setAttribute("opacity",(1-e).toFixed(2));
+        }else{
+          a.rect.setAttribute("x",(a.p0.x+(a.p1.x-a.p0.x)*e).toFixed(2));
+          a.rect.setAttribute("y",(a.p0.y+(a.p1.y-a.p0.y)*e).toFixed(2));
+          a.rect.setAttribute("width",(o.cw+(n.cw-o.cw)*e).toFixed(2));
+          a.rect.setAttribute("height",(o.ch+(n.ch-o.ch)*e).toFixed(2));
+        }
+      });
+      if(k<1) requestAnimationFrame(step); else done();
+    })(t0);
   }
 
   function gameOver(){
