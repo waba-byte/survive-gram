@@ -136,7 +136,7 @@
   #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
-  #themeBtn{top:82px;font-size:15px;line-height:1;padding:5px 9px}
+  #themeBtn{top:82px}
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
     background:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.22) 50%),
@@ -168,7 +168,7 @@
   <div id="crt"></div>
   <button class="sound-toggle" id="soundBtn">♪ ON</button>
   <button class="sound-toggle" id="crtBtn">▦ CRT</button>
-  <button class="sound-toggle" id="themeBtn" title="Cambia skin / Theme">🟣</button>
+  <button class="sound-toggle" id="themeBtn" title="Cambia skin: Viola / Blu">🟣 VIOLA</button>
   <div id="langWrap"><button id="langBtn" title="Lingua / Language">🌐 IT</button><div id="langMenu" hidden></div></div>
   <header>
     <img class="logo" src="durov-neon-blue.png" width="50" height="50" alt="Survive Gram" decoding="async">
@@ -572,7 +572,7 @@
   function applyTheme(t){
     theme=t;
     document.body.classList.toggle("theme-blue", t==="blu");
-    themeBtn.textContent = t==="blu" ? "🔵" : "🟣";
+    themeBtn.textContent = t==="blu" ? "🔵 BLU" : "🟣 VIOLA";
     deathFace.src = (t==="blu") ? "durov-neon-blue-lg.png" : "durov-neon-purple.png";   // precarica l'immagine giusta
     try{ localStorage.setItem("sg_theme", t); }catch(e){}
     const bg=THEME_BG[t]||THEME_BG.viola;
