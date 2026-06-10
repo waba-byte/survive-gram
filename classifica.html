@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classifica — Survive Gram</title>
+<meta name="theme-color" content="#070310">
+<link rel="icon" type="image/svg+xml" href="durov-cartoon.svg">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="lb.js"></script>
+<style>
+  :root{
+    --bg:#070310; --panel:#0c0816;
+    --red:#b026ff; --red-dim:#2c0a40; --red-glow:#d178ff;
+    --green:#2aabee; --green-dim:#1c7fb8; --txt:#cfcfcf;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(circle at 50% 0%, #0c0518 0%, var(--bg) 70%);
+    color:var(--txt);font-family:"Courier New",ui-monospace,monospace;
+    display:flex;flex-direction:column;align-items:center;min-height:100%;padding:18px 14px;
+    user-select:none;-webkit-user-select:none;overflow-x:hidden;
+  }
+  .brand{color:var(--green);letter-spacing:clamp(2px,1.4vw,5px);font-size:clamp(15px,4.5vw,20px);
+    font-weight:700;text-shadow:0 0 8px var(--green-dim);margin-bottom:4px}
+  h1{color:var(--green);letter-spacing:3px;font-size:22px;text-shadow:0 0 8px var(--green-dim);margin-bottom:16px}
+  .panel{width:min(440px,94vw);background:var(--panel);border:1px solid #1c1030;border-radius:10px;
+    padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 30px rgba(176,38,255,.08) inset}
+  .me-row{display:flex;align-items:center;gap:10px;justify-content:center}
+  .me-row .lbl{font-size:11px;letter-spacing:2px;color:#8a7a9a;text-transform:uppercase}
+  .me-row input{width:150px;background:#0a0712;border:1px solid var(--red-dim);color:var(--green);
+    font-family:inherit;font-size:15px;padding:7px;border-radius:5px;text-align:center}
+  .me-row input:read-only{opacity:.7;cursor:default}
+  ol{list-style:none;display:flex;flex-direction:column;gap:5px;margin:0;padding:0}
+  li{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:5px;background:#0a0712;font-size:15px}
+  li.me{outline:1px solid var(--green);box-shadow:0 0 10px var(--green-dim)}
+  .rank{color:#8a7a9a;width:30px;text-align:center;flex:none}
+  .nm{flex:1;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sc{font-variant-numeric:tabular-nums;flex:none;font-weight:700}
+  .sc.pos{color:var(--green)} .sc.neg{color:var(--red-glow)}
+  .hint{font-size:11px;color:#6a5a7a;text-align:center;letter-spacing:1px}
+  #playBtn{margin-top:18px;font-family:inherit;font-weight:700;letter-spacing:2px;cursor:pointer;border:none;
+    border-radius:7px;padding:14px 30px;font-size:16px;background:var(--green);color:#042033;box-shadow:0 0 14px var(--green-dim)}
+  #playBtn:active{transform:scale(.96)}
+  #crt{position:fixed;inset:0;pointer-events:none;z-index:100;
+    background:linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.2) 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.5) 100%);
+    background-size:100% 3px,100% 100%}
+</style>
+</head>
+<body>
+  <div id="crt"></div>
+  <div class="brand">SURVIVE GRAM</div>
+  <h1>🏆 CLASSIFICA</h1>
+  <div class="panel">
+    <div class="me-row"><span class="lbl">Il tuo nome</span><input id="nameInput" maxlength="12" value="TU" spellcheck="false"></div>
+    <div class="hint" id="hint">netto = vincite − perdite (può essere negativo)</div>
+    <ol id="list"></ol>
+  </div>
+  <button id="playBtn">▶ GIOCA</button>
+
+<script>
+(function(){
+  "use strict";
+  const TG=(window.Telegram&&window.Telegram.WebApp)?window.Telegram.WebApp:null;
+  function tgv(v){ try{ return !!(TG&&TG.isVersionAtLeast&&TG.isVersionAtLeast(v)); }catch(e){ return false; } }
+  const list=document.getElementById("list");
+  const nameInput=document.getElementById("nameInput");
+  const hint=document.getElementById("hint");
+  const playBtn=document.getElementById("playBtn");
+
+  function go(){ location.href="index.html"; }
+
+  function render(){
+    const me=LB.name(), rows=LB.rows();
+    list.innerHTML="";
+    rows.forEach((r,i)=>{
+      const li=document.createElement("li");
+      if(r.name===me) li.className="me";
+      const rank=document.createElement("span"); rank.className="rank";
+      rank.textContent=i===0?"🥇":i===1?"🥈":i===2?"🥉":"#"+(i+1);
+      const nm=document.createElement("span"); nm.className="nm"; nm.textContent=r.name;
+      const sc=document.createElement("span"); sc.className="sc "+(r.score<0?"neg":"pos");
+      sc.textContent=(r.score>0?"+":"")+r.score.toFixed(2);
+      li.append(rank,nm,sc); list.appendChild(li);
+    });
+    nameInput.value=me;
+  }
+
+  if(TG){
+    try{ TG.ready(); TG.expand(); }catch(e){}
+    try{ if(tgv("6.1")){ TG.setHeaderColor("#070310"); TG.setBackgroundColor("#070310"); } }catch(e){}
+    try{ if(tgv("6.1")&&TG.BackButton){ TG.BackButton.show(); TG.BackButton.onClick(go); } }catch(e){}
+  }
+
+  LB.load(); render(); LB.cloudLoad(render);
+
+  if(LB.isTelegramUser()){
+    nameInput.readOnly=true;
+    nameInput.title="Nome preso dal tuo profilo Telegram";
+    hint.textContent="sei identificato dal tuo profilo Telegram";
+  }
+
+  nameInput.addEventListener("change",()=>{ LB.setPlayer(nameInput.value); render(); });
+  nameInput.addEventListener("keydown",e=>{ if(e.key==="Enter") nameInput.blur(); });
+  playBtn.addEventListener("click",go);
+})();
+</script>
+</body>
+</html>

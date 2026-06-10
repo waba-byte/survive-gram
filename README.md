@@ -1,4 +1,4 @@
-# KILLED.GRAM 🎯
+# Survive Gram 🎯
 
 Mini-gioco crash/risk in stile arcade: scegli una cella, schiva il **laser** (alterna riga/colonna), il moltiplicatore sale e la griglia si stringe da 10×10 fino a 1×1 (max **96.0×**). Se il laser ti colpisce → 🟣 game over con gatto demoniaco e risata malefica. Incassa col **CASH OUT**.
 
@@ -8,7 +8,9 @@ Mini-gioco crash/risk in stile arcade: scegli una cella, schiva il **laser** (al
 - Tema **viola morte** + **blu Telegram**, effetto **CRT** (scanline/vignetta/flicker), responsive mobile.
 
 ## File
-- `index.html` — il gioco completo.
+- `index.html` — il gioco (griglia a tutto schermo).
+- `classifica.html` — pagina classifica dedicata.
+- `lb.js` — logica classifica condivisa tra le pagine (localStorage + Telegram CloudStorage).
 - `durov-cartoon.svg` — avatar (usato come favicon; utile come icona del bot).
 
 ## Avvio locale

@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KILLED.GRAM</title>
+<title>Survive Gram</title>
 <meta name="theme-color" content="#070310">
 <link rel="icon" type="image/svg+xml" href="durov-cartoon.svg">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="lb.js"></script>
 <style>
   :root{
     /* tema: "viola morte" (ex rosso) + blu Telegram (ex verde) */
@@ -61,8 +62,8 @@
     30%,50%,70%{transform:translate(-7px,3px)}
     40%,60%{transform:translate(7px,-3px)}
   }
-  #gridSvg{display:block;width:min(560px,76vw);height:auto}
-  #scaleSvg{display:block;width:min(120px,16vw);height:auto}
+  #gridSvg{display:block;width:min(560px,80vw);height:auto}
+  #scaleSvg{display:block;width:min(120px,15vw);height:auto}
   .cell{fill:#140320;stroke:var(--red);stroke-width:1.4;cursor:pointer;transition:fill .12s}
   .cell:hover{fill:#2e0a40}
   .cell.armed{animation:armpulse .6s ease-in-out infinite}
@@ -94,6 +95,9 @@
   @keyframes cashpulse{0%,100%{box-shadow:0 0 10px var(--red)}50%{box-shadow:0 0 22px var(--red-glow)}}
   .msg{margin-top:12px;min-height:22px;font-size:14px;letter-spacing:2px;text-align:center;color:var(--green);text-shadow:0 0 6px var(--green-dim)}
   .msg.dead{color:var(--red);text-shadow:0 0 8px var(--red)}
+  #lbLink{display:inline-flex;align-items:center;font-family:inherit;font-weight:700;letter-spacing:2px;font-size:13px;text-decoration:none;color:var(--green);border:1px solid var(--green-dim);border-radius:6px;padding:11px 18px;transition:box-shadow .15s}
+  #lbLink:active{transform:scale(.96)}
+  #lbLink:hover{box-shadow:0 0 12px var(--green-dim)}
   .sound-toggle{position:fixed;top:14px;right:14px;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
@@ -141,7 +145,7 @@
       <!-- bocca seria -->
       <path d="M16.8 24.4 Q20 24.1 23.2 24.4" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
-    <h1>KILLED.GRAM</h1>
+    <h1>Survive Gram</h1>
   </header>
 
   <div class="arena">
@@ -149,11 +153,6 @@
       <svg id="gridSvg" width="560" height="560" viewBox="0 0 560 560"></svg>
       <svg id="scaleSvg" width="120" height="560" viewBox="0 0 120 560"></svg>
     </div>
-    <aside class="leaderboard">
-      <div class="lb-head">🏆 CLASSIFICA</div>
-      <div class="lb-me"><span class="lbl">Tu</span><input id="nameInput" maxlength="12" value="TU" spellcheck="false"></div>
-      <ol id="lbList"></ol>
-    </aside>
   </div>
 
   <div class="hud">
@@ -163,6 +162,7 @@
     <div class="stat"><div class="lbl">Vincita</div><div class="val" id="winVal">0.00</div></div>
     <button id="startBtn">START</button>
     <button id="cashBtn" disabled>CASH OUT</button>
+    <a id="lbLink" href="classifica.html">🏆 CLASSIFICA</a>
   </div>
 
   <div class="msg" id="msg">Premi START, poi clicca una cella per schivare il laser.</div>
@@ -179,7 +179,6 @@
   /* ---------- TELEGRAM MINI APP (tutto opzionale: funziona anche fuori da Telegram) ---------- */
   const TG=(window.Telegram&&window.Telegram.WebApp)?window.Telegram.WebApp:null;
   function tgv(v){ try{ return !!(TG&&TG.isVersionAtLeast&&TG.isVersionAtLeast(v)); }catch(e){ return false; } }
-  const TG_CLOUD=!!(TG&&TG.CloudStorage&&tgv("6.9"));
   function haptic(kind){
     if(!TG||!TG.HapticFeedback||!tgv("6.1")) return;
     try{
@@ -303,56 +302,7 @@
   function setMult(){multVal.textContent=fmt(state.mult)+"x";}
   function setWin(){winVal.textContent=(state.bet*state.mult).toFixed(2);}
 
-  /* ---------- CLASSIFICA (netto = vincite - perdite, salvato in localStorage) ---------- */
-  const LB_KEY="laserdeath_lb_v1";
-  let lb=null, curName="TU";
-  function defaultLB(){
-    return {current:"TU", players:{
-      "ZKULL":2050,"NEKO_666":1840,"V01D":920,"PHANTOM":315,
-      "TU":0,"LARA":-120,"GHOST":-430,"N00B":-880
-    }};
-  }
-  function saveLB(){
-    try{ localStorage.setItem(LB_KEY,JSON.stringify(lb)); }catch(e){}
-    if(TG_CLOUD){ try{ TG.CloudStorage.setItem(LB_KEY,JSON.stringify(lb)); }catch(e){} }
-  }
-  function loadLB(){
-    try{ lb=JSON.parse(localStorage.getItem(LB_KEY)); }catch(e){ lb=null; }
-    if(!lb||!lb.players) lb=defaultLB();
-    curName=lb.current||"TU";
-    if(!(curName in lb.players)) lb.players[curName]=0;
-    saveLB();
-  }
-  function cloudLoad(){   // ripristina il netto cross-device da Telegram CloudStorage
-    if(!TG_CLOUD) return;
-    try{ TG.CloudStorage.getItem(LB_KEY,function(err,val){
-      if(err||!val) return;
-      try{ const d=JSON.parse(val);
-        if(d&&d.players){ lb=d; if(!(curName in lb.players)) lb.players[curName]=0; lb.current=curName; renderLB(); }
-      }catch(e){}
-    }); }catch(e){}
-  }
-  function addScore(delta){ lb.players[curName]=(lb.players[curName]||0)+delta; saveLB(); renderLB(); }
-  function setPlayer(name){
-    name=(name||"").trim().toUpperCase().slice(0,12)||"TU";
-    curName=name; lb.current=name;
-    if(!(name in lb.players)) lb.players[name]=0;
-    nameInput.value=name; saveLB(); renderLB();
-  }
-  function renderLB(){
-    const rows=Object.keys(lb.players).map(n=>({n,s:lb.players[n]})).sort((a,b)=>b.s-a.s);
-    lbList.innerHTML="";
-    rows.forEach((r,i)=>{
-      const li=document.createElement("li");
-      if(r.n===curName) li.className="me";
-      const rank=document.createElement("span"); rank.className="rank";
-      rank.textContent=i===0?"🥇":i===1?"🥈":i===2?"🥉":"#"+(i+1);
-      const nm=document.createElement("span"); nm.className="nm"; nm.textContent=r.n;
-      const sc=document.createElement("span"); sc.className="sc "+(r.s<0?"neg":"pos");
-      sc.textContent=(r.s>0?"+":"")+r.s.toFixed(2);
-      li.append(rank,nm,sc); lbList.appendChild(li);
-    });
-  }
+  // Classifica: logica condivisa in lb.js (window.LB) — UI nella pagina classifica.html
 
   /* ---------- SCALA LATERALE ---------- */
   function drawScale(){
@@ -449,7 +399,7 @@
 
   function gameOver(){
     state.playing=false;state.busy=false;
-    addScore(-state.bet);               // netto: perdita della puntata
+    LB.addScore(-state.bet);            // netto: perdita della puntata
     cashBtn.disabled=true;startBtn.disabled=false;
     msg.textContent="☠ COLPITO! Persi "+state.bet.toFixed(2)+". Premi START.";
     msg.classList.add("dead");drawScale();
@@ -458,7 +408,7 @@
   function cashOut(){
     if(!state.playing||state.busy) return;
     const win=state.bet*state.mult; setBalance(state.balance+win);
-    addScore(win-state.bet);            // netto: profitto (puntata gia' rientrata)
+    LB.addScore(win-state.bet);         // netto: profitto (puntata gia' rientrata)
     state.playing=false;state.maxed=false;cashBtn.disabled=true;startBtn.disabled=false;
     haptic("cash"); sfx.cash();
     msg.textContent="💰 Incassato "+win.toFixed(2)+" ("+fmt(state.mult)+"x)! Premi START.";
@@ -522,19 +472,13 @@
       if(!state.playing) start(); else if(!state.busy) cashOut();
     }
   });
-  nameInput.addEventListener("change",()=>setPlayer(nameInput.value));
-  nameInput.addEventListener("keydown",e=>{ if(e.code==="Enter") nameInput.blur(); });
-
-  loadLB();
+  LB.load();
   if(TG){
     try{ TG.ready(); TG.expand(); }catch(e){}
     try{ if(tgv("6.1")){ TG.setHeaderColor("#070310"); TG.setBackgroundColor("#070310"); } }catch(e){}
     try{ if(tgv("7.7")&&TG.disableVerticalSwipes) TG.disableVerticalSwipes(); }catch(e){}
-    const u=TG.initDataUnsafe&&TG.initDataUnsafe.user;
-    if(u) setPlayer(u.username||u.first_name||"TU");
   }
-  nameInput.value=curName; renderLB();
-  cloudLoad();
+  LB.cloudLoad();
   setBalance(1000);drawGrid();drawScale();
 })();
 </script>
