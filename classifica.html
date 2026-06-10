@@ -8,6 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="durov-cartoon.svg">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="lb.js"></script>
+<script src="i18n.js"></script>
 <style>
   :root{
     --bg:#070310; --panel:#0c0816;
@@ -52,13 +53,13 @@
 <body>
   <div id="crt"></div>
   <div class="brand">SURVIVE GRAM</div>
-  <h1>🏆 CLASSIFICA</h1>
+  <h1 data-i18n="cls_title">🏆 CLASSIFICA</h1>
   <div class="panel">
-    <div class="me-row"><span class="lbl">Il tuo nome</span><input id="nameInput" maxlength="12" value="TU" spellcheck="false"></div>
-    <div class="hint" id="hint">netto = vincite − perdite (può essere negativo)</div>
+    <div class="me-row"><span class="lbl" data-i18n="cls_yourname">Il tuo nome</span><input id="nameInput" maxlength="12" value="TU" spellcheck="false"></div>
+    <div class="hint" id="hint" data-i18n="cls_hint">netto = vincite − perdite (può essere negativo)</div>
     <ol id="list"></ol>
   </div>
-  <button id="playBtn">▶ GIOCA</button>
+  <button id="playBtn" data-i18n="btn_play">▶ GIOCA</button>
 
 <script>
 (function(){
@@ -94,13 +95,18 @@
     try{ if(tgv("6.1")&&TG.BackButton){ TG.BackButton.show(); TG.BackButton.onClick(go); } }catch(e){}
   }
 
+  I18N.apply(document);
   LB.load(); render(); LB.cloudLoad(render);
 
-  if(LB.isTelegramUser()){
-    nameInput.readOnly=true;
-    nameInput.title="Nome preso dal tuo profilo Telegram";
-    hint.textContent="sei identificato dal tuo profilo Telegram";
+  function applyTgHint(){
+    if(LB.isTelegramUser()){
+      nameInput.readOnly=true;
+      nameInput.title=I18N.t("cls_tg_name_title");
+      hint.textContent=I18N.t("cls_tg_hint");
+    }
   }
+  applyTgHint();
+  window.addEventListener("i18n:change",applyTgHint);
 
   nameInput.addEventListener("change",()=>{ LB.setPlayer(nameInput.value); render(); });
   nameInput.addEventListener("keydown",e=>{ if(e.key==="Enter") nameInput.blur(); });

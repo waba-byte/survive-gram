@@ -5,12 +5,14 @@ Mini-gioco crash/risk in stile arcade: scegli una cella, schiva il **laser** (al
 - **Zero dipendenze, zero backend, zero immagini**: un singolo file HTML con tutta l'art in **SVG/CSS coded** e audio sintetizzato via Web Audio.
 - **Telegram Mini App ready**: integra `telegram-web-app.js` (haptics, tema, nome utente automatico, persistenza CloudStorage). Funziona identico anche fuori da Telegram.
 - **Classifica** col netto (vincite − perdite, anche negativo), salvata in `localStorage` + CloudStorage.
+- **Multilingua** (IT / EN / ES / FR / DE / PT / RU): si adatta alla lingua del dispositivo/Telegram, con selettore 🌐 poco invasivo nella schermata di gioco.
 - Tema **viola morte** + **blu Telegram**, effetto **CRT** (scanline/vignetta/flicker), responsive mobile.
 
 ## File
 - `index.html` — il gioco (griglia a tutto schermo).
 - `classifica.html` — pagina classifica dedicata.
 - `lb.js` — logica classifica condivisa tra le pagine (localStorage + Telegram CloudStorage).
+- `i18n.js` — traduzioni e selettore lingua (7 lingue), rilevamento automatico.
 - `durov-cartoon.svg` — avatar (usato come favicon; utile come icona del bot).
 
 ## Avvio locale

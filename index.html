@@ -8,6 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="durov-cartoon.svg">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="lb.js"></script>
+<script src="i18n.js"></script>
 <style>
   :root{
     /* tema: "viola morte" (ex rosso) + blu Telegram (ex verde) */
@@ -99,6 +100,13 @@
   #lbLink:active{transform:scale(.97)}
   #lbLink:hover{background:rgba(42,171,238,.16);box-shadow:0 0 16px var(--green-dim)}
   .sound-toggle{position:fixed;top:14px;right:14px;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px}
+  #langWrap{position:fixed;top:14px;left:14px;z-index:120}
+  #langBtn{background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px;font-family:inherit;cursor:pointer;border-radius:4px}
+  #langMenu{position:absolute;top:36px;left:0;background:var(--panel);border:1px solid #1c1030;border-radius:6px;padding:4px;display:flex;flex-direction:column;gap:2px;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.55)}
+  #langMenu[hidden]{display:none}
+  #langMenu button{background:none;border:none;color:var(--txt);text-align:left;padding:8px 10px;font-size:13px;letter-spacing:1px;border-radius:4px;cursor:pointer;font-family:inherit}
+  #langMenu button:hover{background:#1a1030;color:var(--green)}
+  #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
@@ -121,6 +129,7 @@
   <div id="crt"></div>
   <button class="sound-toggle" id="soundBtn">♪ ON</button>
   <button class="sound-toggle" id="crtBtn">▦ CRT</button>
+  <div id="langWrap"><button id="langBtn" title="Lingua / Language">🌐 IT</button><div id="langMenu" hidden></div></div>
   <header>
     <svg class="logo" width="34" height="34" viewBox="0 0 40 40">
       <!-- spalle / busto -->
@@ -156,17 +165,17 @@
   </div>
 
   <div class="hud">
-    <div class="stat"><div class="lbl">Saldo</div><div class="val" id="balanceVal">1000.00</div></div>
-    <div class="betbox stat"><div><div class="lbl">Puntata</div><input id="betInput" type="number" value="10" min="1" step="1"></div></div>
-    <div class="stat"><div class="lbl">Moltipl.</div><div class="val red" id="multVal">1.00x</div></div>
-    <div class="stat"><div class="lbl">Vincita</div><div class="val" id="winVal">0.00</div></div>
+    <div class="stat"><div class="lbl" data-i18n="hud_balance">Saldo</div><div class="val" id="balanceVal">1000.00</div></div>
+    <div class="betbox stat"><div><div class="lbl" data-i18n="hud_bet">Puntata</div><input id="betInput" type="number" value="10" min="1" step="1"></div></div>
+    <div class="stat"><div class="lbl" data-i18n="hud_mult">Moltipl.</div><div class="val red" id="multVal">1.00x</div></div>
+    <div class="stat"><div class="lbl" data-i18n="hud_win">Vincita</div><div class="val" id="winVal">0.00</div></div>
     <button id="startBtn">START</button>
     <button id="cashBtn" disabled>CASH OUT</button>
   </div>
 
   <div class="msg" id="msg">Premi START, poi clicca una cella per schivare il laser.</div>
 
-  <a id="lbLink" href="classifica.html">🏆 CLASSIFICA</a>
+  <a id="lbLink" href="classifica.html" data-i18n="btn_leaderboard">🏆 CLASSIFICA</a>
 
 <script>
 (function(){
@@ -217,6 +226,7 @@
   const balanceVal=$("balanceVal"), multVal=$("multVal"), winVal=$("winVal");
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
   const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
+  const langBtn=$("langBtn"), langMenu=$("langMenu");
   const lbList=$("lbList"), nameInput=$("nameInput");
 
   let state={playing:false,busy:false,maxed:false,rows:START,cols:START,round:0,mult:1,bet:0,balance:1000,axis:"h"};
@@ -303,6 +313,19 @@
   function setMult(){multVal.textContent=fmt(state.mult)+"x";}
   function setWin(){winVal.textContent=(state.bet*state.mult).toFixed(2);}
 
+  /* messaggi localizzati: memorizza chiave+parametri per ri-tradurre al cambio lingua */
+  let _mk="msg_intro", _mp={};
+  function renderMsg(){
+    const p=Object.assign({},_mp);
+    if(p.axis!=null)   p.axis=I18N.t(p.axis==="h"?"axis_h":"axis_v");
+    if(p.axisUp!=null) p.axis=I18N.t(p.axisUp==="h"?"axis_h":"axis_v").toUpperCase();
+    msg.textContent=I18N.t(_mk,p);
+  }
+  function setMsg(key,params,dead){
+    _mk=key; _mp=params||{}; renderMsg();
+    if(dead) msg.classList.add("dead"); else msg.classList.remove("dead");
+  }
+
   // Classifica: logica condivisa in lb.js (window.LB) — UI nella pagina classifica.html
 
   /* ---------- SCALA LATERALE ---------- */
@@ -353,8 +376,7 @@
     const hitIndex=Math.floor(Math.random()*lines);
     const ctr=center(selR,selC), b=bounds();
     cellEl.classList.add("armed");
-    msg.textContent="Laser "+(axis==="h"?"ORIZZONTALE":"VERTICALE")+" in carica...";
-    msg.classList.remove("dead");
+    setMsg("msg_charging",{axisUp:axis});
     sfx.charge();
 
     setTimeout(()=>{
@@ -391,19 +413,19 @@
     state.mult=multAfter(state.round); setMult(); setWin();
     if(state.round>=MAX_ROUNDS){
       state.maxed=true; drawGrid(); drawScale(); state.busy=false;
-      msg.textContent="🏆 MAX "+fmt(state.mult)+"x! Premi CASH OUT.";
+      setMsg("msg_max",{mult:fmt(state.mult)});
       return;
     }
     drawGrid(); drawScale(); state.busy=false;
-    msg.textContent="Schivato! "+fmt(state.mult)+"x — clicca per il laser "+(state.axis==="h"?"orizzontale":"verticale")+" o CASH OUT.";
+    setMsg("msg_dodged",{mult:fmt(state.mult),axis:state.axis});
   }
 
   function gameOver(){
     state.playing=false;state.busy=false;
     LB.addScore(-state.bet);            // netto: perdita della puntata
     cashBtn.disabled=true;startBtn.disabled=false;
-    msg.textContent="☠ COLPITO! Persi "+state.bet.toFixed(2)+". Premi START.";
-    msg.classList.add("dead");drawScale();
+    setMsg("msg_hit",{bet:state.bet.toFixed(2)},true);
+    drawScale();
   }
 
   function cashOut(){
@@ -412,21 +434,19 @@
     LB.addScore(win-state.bet);         // netto: profitto (puntata gia' rientrata)
     state.playing=false;state.maxed=false;cashBtn.disabled=true;startBtn.disabled=false;
     haptic("cash"); sfx.cash();
-    msg.textContent="💰 Incassato "+win.toFixed(2)+" ("+fmt(state.mult)+"x)! Premi START.";
-    msg.classList.remove("dead");
+    setMsg("msg_cashed",{win:win.toFixed(2),mult:fmt(state.mult)});
   }
 
   function start(){
     audio();
     const bet=parseFloat(betInput.value);
-    if(!(bet>0)){msg.textContent="Puntata non valida.";return;}
-    if(bet>state.balance){msg.textContent="Saldo insufficiente.";return;}
+    if(!(bet>0)){setMsg("err_bet");return;}
+    if(bet>state.balance){setMsg("err_balance");return;}
     setBalance(state.balance-bet);
     Object.assign(state,{playing:true,busy:false,maxed:false,rows:START,cols:START,round:0,mult:1,bet,axis:"h"});
     setMult();setWin();drawGrid();drawScale();
     startBtn.disabled=true;cashBtn.disabled=false;
-    msg.textContent="Clicca una cella per schivare il laser orizzontale.";
-    msg.classList.remove("dead");
+    setMsg("msg_pick",{axis:"h"});
   }
 
   /* ---------- EFFETTI ---------- */
@@ -466,6 +486,22 @@
   soundBtn.addEventListener("click",()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?"♪ ON":"♪ OFF";});
   let crtOn=true;
   crtBtn.addEventListener("click",()=>{crtOn=!crtOn;crt.style.display=crtOn?"block":"none";crtBtn.textContent=crtOn?"▦ CRT":"▦ OFF";});
+  // selettore lingua
+  function langLabel(){ return "🌐 "+I18N.cur.toUpperCase(); }
+  function buildLangMenu(){
+    langMenu.innerHTML="";
+    I18N.LANGS.forEach(code=>{
+      const b=document.createElement("button");
+      b.textContent=I18N.FLAGS[code]+" "+I18N.NAMES[code];
+      if(code===I18N.cur) b.className="sel";
+      b.addEventListener("click",ev=>{ ev.stopPropagation(); I18N.set(code); langMenu.hidden=true; });
+      langMenu.appendChild(b);
+    });
+  }
+  langBtn.addEventListener("click",ev=>{ ev.stopPropagation(); langMenu.hidden=!langMenu.hidden; });
+  langMenu.addEventListener("click",ev=>ev.stopPropagation());
+  document.addEventListener("click",()=>{ langMenu.hidden=true; });
+  window.addEventListener("i18n:change",()=>{ langBtn.textContent=langLabel(); buildLangMenu(); renderMsg(); });
   document.addEventListener("keydown",e=>{
     if(e.target&&e.target.tagName==="INPUT") return;   // non interferire mentre si scrive nome/puntata
     if(e.code==="Space"||e.code==="Enter"){
@@ -480,6 +516,7 @@
     try{ if(tgv("7.7")&&TG.disableVerticalSwipes) TG.disableVerticalSwipes(); }catch(e){}
   }
   LB.cloudLoad();
+  I18N.apply(document); langBtn.textContent=langLabel(); buildLangMenu(); setMsg("msg_intro");
   setBalance(1000);drawGrid();drawScale();
 })();
 </script>
