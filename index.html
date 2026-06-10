@@ -95,9 +95,9 @@
   @keyframes cashpulse{0%,100%{box-shadow:0 0 10px var(--red)}50%{box-shadow:0 0 22px var(--red-glow)}}
   .msg{margin-top:12px;min-height:22px;font-size:14px;letter-spacing:2px;text-align:center;color:var(--green);text-shadow:0 0 6px var(--green-dim)}
   .msg.dead{color:var(--red);text-shadow:0 0 8px var(--red)}
-  #lbLink{display:inline-flex;align-items:center;font-family:inherit;font-weight:700;letter-spacing:2px;font-size:13px;text-decoration:none;color:var(--green);border:1px solid var(--green-dim);border-radius:6px;padding:11px 18px;transition:box-shadow .15s}
-  #lbLink:active{transform:scale(.96)}
-  #lbLink:hover{box-shadow:0 0 12px var(--green-dim)}
+  #lbLink{display:flex;align-items:center;justify-content:center;gap:8px;margin:28px auto 4px;width:100%;max-width:440px;box-sizing:border-box;font-family:inherit;font-weight:700;letter-spacing:3px;font-size:16px;text-decoration:none;color:var(--green);background:rgba(42,171,238,.08);border:2px solid var(--green-dim);border-radius:8px;padding:15px 22px;text-align:center;transition:transform .08s,box-shadow .15s,background .15s}
+  #lbLink:active{transform:scale(.97)}
+  #lbLink:hover{background:rgba(42,171,238,.16);box-shadow:0 0 16px var(--green-dim)}
   .sound-toggle{position:fixed;top:14px;right:14px;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
@@ -162,10 +162,11 @@
     <div class="stat"><div class="lbl">Vincita</div><div class="val" id="winVal">0.00</div></div>
     <button id="startBtn">START</button>
     <button id="cashBtn" disabled>CASH OUT</button>
-    <a id="lbLink" href="classifica.html">🏆 CLASSIFICA</a>
   </div>
 
   <div class="msg" id="msg">Premi START, poi clicca una cella per schivare il laser.</div>
+
+  <a id="lbLink" href="classifica.html">🏆 CLASSIFICA</a>
 
 <script>
 (function(){
