@@ -47,14 +47,15 @@
     text-shadow:0 0 8px var(--green-dim);
   }
   /* selettore skin sotto il nome: due pulsanti a colore FISSO (viola/blu) */
-  .skinpick{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
-  .skin-btn{font-family:inherit;font-weight:700;letter-spacing:1px;font-size:12px;cursor:pointer;background:var(--panel);border:1px solid;border-radius:6px;padding:6px 14px;transition:transform .08s,box-shadow .15s,background .15s,color .15s,opacity .15s}
-  .skin-btn:active{transform:scale(.96)}
-  .skin-btn.viola{color:#c77dff;border-color:#5a1c80}
-  .skin-btn.blu{color:#74c8f5;border-color:#1c5a7a}
-  .skin-btn:not(.active){opacity:.55}
-  .skin-btn.active.viola{color:#fff;background:#2c0a40;border-color:#b026ff;box-shadow:0 0 12px #b026ff}
-  .skin-btn.active.blu{color:#fff;background:#0c3a55;border-color:#2aabee;box-shadow:0 0 12px #2aabee}
+  .skinpick{display:flex;gap:16px;justify-content:center;align-items:center;margin-bottom:14px}
+  .skin-btn{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid transparent;cursor:pointer;font-size:0;transition:transform .1s,box-shadow .15s,opacity .15s,border-color .15s}
+  .skin-btn:active{transform:scale(.9)}
+  .skin-btn.viola{background:#b026ff}
+  .skin-btn.blu{background:#2aabee}
+  .skin-btn:not(.active){opacity:.4}
+  .skin-btn.active{transform:scale(1.15)}
+  .skin-btn.active.viola{border-color:#fff;box-shadow:0 0 12px #b026ff}
+  .skin-btn.active.blu{border-color:#fff;box-shadow:0 0 12px #2aabee}
   .arena{display:flex;justify-content:center;width:100%}
   .stage{
     /* layout a colonna: griglia (quadrata, piena larghezza) sopra, scala moltiplicatore
@@ -182,8 +183,8 @@
     <h1>Survive Gram</h1>
   </header>
   <div class="skinpick">
-    <button class="skin-btn viola" data-skin="viola">🟣 VIOLA</button>
-    <button class="skin-btn blu" data-skin="blu">🔵 BLU</button>
+    <button class="skin-btn viola" data-skin="viola" aria-label="Viola" title="Viola"></button>
+    <button class="skin-btn blu" data-skin="blu" aria-label="Blu" title="Blu"></button>
   </div>
 
   <div class="arena">
