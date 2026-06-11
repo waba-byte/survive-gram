@@ -25,7 +25,8 @@
       cls_hint:"netto = vincite − perdite (può essere negativo)",
       cls_tg_hint:"sei identificato dal tuo profilo Telegram",
       cls_tg_name_title:"Nome preso dal tuo profilo Telegram",
-      btn_play:"▶ GIOCA"
+      btn_play:"▶ GIOCA",
+      tut_title:"Come si gioca", tut_s1:"Tocca una cella per schivare il laser.", tut_s2:"Ogni schivata stringe la griglia e fa salire il moltiplicatore.", tut_s3:"Fai CASH OUT prima di essere colpito!", tut_help:"❔ Come si gioca"
     },
     en:{
       hud_balance:"Balance", hud_bet:"Bet", hud_mult:"Multip.", hud_win:"Win",
@@ -43,7 +44,8 @@
       cls_hint:"net = wins − losses (can be negative)",
       cls_tg_hint:"you're identified by your Telegram profile",
       cls_tg_name_title:"Name from your Telegram profile",
-      btn_play:"▶ PLAY"
+      btn_play:"▶ PLAY",
+      tut_title:"How to play", tut_s1:"Tap a cell to dodge the laser.", tut_s2:"Each dodge shrinks the grid and raises the multiplier.", tut_s3:"Cash out before you get hit!", tut_help:"❔ How to play"
     },
     es:{
       hud_balance:"Saldo", hud_bet:"Apuesta", hud_mult:"Multipl.", hud_win:"Ganancia",
@@ -61,7 +63,8 @@
       cls_hint:"neto = ganancias − pérdidas (puede ser negativo)",
       cls_tg_hint:"te identifica tu perfil de Telegram",
       cls_tg_name_title:"Nombre de tu perfil de Telegram",
-      btn_play:"▶ JUGAR"
+      btn_play:"▶ JUGAR",
+      tut_title:"Cómo se juega", tut_s1:"Toca una casilla para esquivar el láser.", tut_s2:"Cada esquive reduce la cuadrícula y sube el multiplicador.", tut_s3:"¡Haz CASH OUT antes de que te alcancen!", tut_help:"❔ Cómo se juega"
     },
     fr:{
       hud_balance:"Solde", hud_bet:"Mise", hud_mult:"Multipl.", hud_win:"Gain",
@@ -79,7 +82,8 @@
       cls_hint:"net = gains − pertes (peut être négatif)",
       cls_tg_hint:"tu es identifié par ton profil Telegram",
       cls_tg_name_title:"Nom depuis ton profil Telegram",
-      btn_play:"▶ JOUER"
+      btn_play:"▶ JOUER",
+      tut_title:"Comment jouer", tut_s1:"Touche une case pour esquiver le laser.", tut_s2:"Chaque esquive réduit la grille et augmente le multiplicateur.", tut_s3:"Encaisse avant d'être touché !", tut_help:"❔ Comment jouer"
     },
     de:{
       hud_balance:"Guthaben", hud_bet:"Einsatz", hud_mult:"Multipl.", hud_win:"Gewinn",
@@ -97,7 +101,8 @@
       cls_hint:"netto = Gewinne − Verluste (kann negativ sein)",
       cls_tg_hint:"du wirst über dein Telegram-Profil identifiziert",
       cls_tg_name_title:"Name aus deinem Telegram-Profil",
-      btn_play:"▶ SPIELEN"
+      btn_play:"▶ SPIELEN",
+      tut_title:"So wird gespielt", tut_s1:"Tippe auf eine Zelle, um dem Laser auszuweichen.", tut_s2:"Jedes Ausweichen verkleinert das Gitter und erhöht den Multiplikator.", tut_s3:"Mach CASH OUT, bevor du getroffen wirst!", tut_help:"❔ So wird gespielt"
     },
     pt:{
       hud_balance:"Saldo", hud_bet:"Aposta", hud_mult:"Multipl.", hud_win:"Ganho",
@@ -115,7 +120,8 @@
       cls_hint:"líquido = ganhos − perdas (pode ser negativo)",
       cls_tg_hint:"você é identificado pelo seu perfil do Telegram",
       cls_tg_name_title:"Nome do seu perfil do Telegram",
-      btn_play:"▶ JOGAR"
+      btn_play:"▶ JOGAR",
+      tut_title:"Como jogar", tut_s1:"Toque numa célula para desviar do laser.", tut_s2:"Cada desvio encolhe a grade e aumenta o multiplicador.", tut_s3:"Faça CASH OUT antes de ser atingido!", tut_help:"❔ Como jogar"
     },
     ru:{
       hud_balance:"Баланс", hud_bet:"Ставка", hud_mult:"Множ.", hud_win:"Выигрыш",
@@ -133,7 +139,8 @@
       cls_hint:"нетто = выигрыши − проигрыши (может быть отрицательным)",
       cls_tg_hint:"ты определяешься по профилю Telegram",
       cls_tg_name_title:"Имя из профиля Telegram",
-      btn_play:"▶ ИГРАТЬ"
+      btn_play:"▶ ИГРАТЬ",
+      tut_title:"Как играть", tut_s1:"Нажми на клетку, чтобы увернуться от лазера.", tut_s2:"Каждое уклонение сжимает сетку и повышает множитель.", tut_s3:"Заберите выигрыш (CASH OUT) до попадания!", tut_help:"❔ Как играть"
     }
   };
 

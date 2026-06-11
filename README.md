@@ -7,6 +7,7 @@ Mini-gioco crash/risk in stile arcade: scegli una cella, schiva il **laser** (al
 - **Telegram Mini App ready**: integra `telegram-web-app.js` (haptics, tema, nome utente automatico, persistenza CloudStorage). Funziona identico anche fuori da Telegram.
 - **Classifica** col netto (vincite − perdite, anche negativo), salvata in `localStorage` + CloudStorage.
 - **Multilingua** (IT / EN / ES / FR / DE / PT / RU): si adatta alla lingua del dispositivo/Telegram, con selettore 🌐 poco invasivo nella schermata di gioco.
+- **Tutorial** al primo avvio (overlay animato coded, localizzato), ri-apribile con il link "❔ Come si gioca".
 - Tema **viola morte** + **blu Telegram**, effetto **CRT** (scanline/vignetta/flicker), responsive mobile.
 
 ## File

@@ -159,6 +159,25 @@
     animation:crtscan 7s linear infinite;}
   @keyframes crtscan{0%{top:-32%}100%{top:100%}}
   @keyframes crtflicker{0%{opacity:.96}3%{opacity:1}6%{opacity:.95}9%{opacity:1}48%{opacity:.98}49%{opacity:.92}50%{opacity:1}100%{opacity:.98}}
+  /* ---- TUTORIAL (overlay al primo avvio; demo animata coded) ---- */
+  #tutLink{display:block;margin:14px auto 4px;background:none;border:none;color:#8a7a9a;font-family:inherit;font-size:13px;letter-spacing:1px;cursor:pointer;text-decoration:underline}
+  #tutorial{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,2,8,.88)}
+  #tutorial[hidden]{display:none}
+  .tut-card{background:var(--panel);border:1px solid var(--green-dim);border-radius:14px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 0 40px rgba(42,171,238,.22);animation:tutpop .3s cubic-bezier(.2,1.4,.35,1) both}
+  @keyframes tutpop{0%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
+  .tut-card h2{color:var(--green);letter-spacing:2px;font-size:18px;margin-bottom:16px;text-shadow:0 0 8px var(--green-dim)}
+  .tut-demo{position:relative;width:150px;height:150px;margin:0 auto 18px}
+  .tut-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:5px;width:100%;height:100%}
+  .tut-grid .tc{border:1.5px solid var(--red);border-radius:3px;background:var(--cell-fill)}
+  .tut-grid .tc.target{border-color:#39ff7a;box-shadow:0 0 8px #39ff7a;animation:tcsafe 2.6s ease-in-out infinite}
+  @keyframes tcsafe{0%,46%{opacity:.4}54%,86%{opacity:1}100%{opacity:.4}}
+  .tut-laser{position:absolute;top:0;left:0;width:6px;height:100%;border-radius:3px;background:var(--red-glow);box-shadow:0 0 8px var(--red-glow),0 0 16px var(--red);animation:tutsweep 2.6s ease-in-out infinite}
+  @keyframes tutsweep{0%,8%{transform:translateX(0);opacity:0}16%{opacity:1}50%{transform:translateX(144px);opacity:1}58%,100%{transform:translateX(144px);opacity:0}}
+  .tut-steps{list-style:none;text-align:left;display:flex;flex-direction:column;gap:11px;margin:0 0 20px;padding:0}
+  .tut-steps li{font-size:13px;line-height:1.4;color:var(--txt);display:flex;gap:9px;align-items:flex-start}
+  .tut-steps li b{font-size:16px;line-height:1.2;flex:none}
+  #tutPlay{background:var(--green);color:#042033;font-family:inherit;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;padding:13px 28px;font-size:15px;cursor:pointer;box-shadow:0 0 16px var(--green-dim);width:100%}
+  #tutPlay:active{transform:scale(.97)}
   /* ---- MOBILE: HUD compatto a 2 colonne (la griglia e' gia' a piena larghezza) ---- */
   @media (max-width:640px){
     body{padding:8px}
@@ -209,6 +228,20 @@
   <div class="msg" id="msg">Premi START, poi clicca una cella per schivare il laser.</div>
 
   <a id="lbLink" href="classifica.html" data-i18n="btn_leaderboard">🏆 CLASSIFICA</a>
+  <button id="tutLink" data-i18n="tut_help">❔ Come si gioca</button>
+
+  <div id="tutorial" hidden>
+    <div class="tut-card">
+      <h2 data-i18n="tut_title">Come si gioca</h2>
+      <div class="tut-demo"><div class="tut-grid" id="tutGrid"></div><div class="tut-laser"></div></div>
+      <ul class="tut-steps">
+        <li><b>🎯</b><span data-i18n="tut_s1">Tocca una cella per schivare il laser.</span></li>
+        <li><b>📈</b><span data-i18n="tut_s2">Ogni schivata stringe la griglia e fa salire il moltiplicatore.</span></li>
+        <li><b>💰</b><span data-i18n="tut_s3">Fai CASH OUT prima di essere colpito!</span></li>
+      </ul>
+      <button id="tutPlay" data-i18n="btn_play">▶ GIOCA</button>
+    </div>
+  </div>
 
 <script>
 (function(){
@@ -260,6 +293,7 @@
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
   const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
   const skinBtns=Array.from(document.querySelectorAll(".skin-btn"));
+  const tutorial=$("tutorial"), tutGrid=$("tutGrid"), tutPlay=$("tutPlay"), tutLink=$("tutLink");
   const langBtn=$("langBtn"), langMenu=$("langMenu");
   const lbList=$("lbList"), nameInput=$("nameInput");
 
@@ -593,6 +627,17 @@
     try{ if(TG&&tgv("6.1")){ TG.setHeaderColor(bg); TG.setBackgroundColor(bg); } }catch(e){}
   }
   skinBtns.forEach(b=>b.addEventListener("click",()=>applyTheme(b.dataset.skin)));
+  // tutorial (overlay primo avvio)
+  function buildTutGrid(){
+    if(!tutGrid) return;
+    tutGrid.innerHTML="";
+    for(let i=0;i<16;i++){ const d=document.createElement("div"); d.className="tc"+(i===6?" target":""); tutGrid.appendChild(d); }
+  }
+  function showTutorial(){ tutorial.hidden=false; }
+  function closeTutorial(){ tutorial.hidden=true; try{ localStorage.setItem("sg_tut_seen","1"); }catch(e){} }
+  tutPlay.addEventListener("click",closeTutorial);
+  tutLink.addEventListener("click",showTutorial);
+  tutorial.addEventListener("click",e=>{ if(e.target===tutorial) closeTutorial(); });
   // selettore lingua
   function langLabel(){ return "🌐 "+I18N.cur.toUpperCase(); }
   function buildLangMenu(){
@@ -624,6 +669,9 @@
   LB.cloudLoad();
   I18N.apply(document); langBtn.textContent=langLabel(); buildLangMenu(); setMsg("msg_intro");
   applyTheme(theme);
+  buildTutGrid();
+  let tutSeen=false; try{ tutSeen=!!localStorage.getItem("sg_tut_seen"); }catch(e){}
+  if(!tutSeen) showTutorial();
   setBalance(1000);drawGrid();drawScale();
 })();
 </script>
