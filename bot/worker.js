@@ -7,6 +7,7 @@
  */
 
 const GAME_URL = "https://waba-byte.github.io/survive-gram/";
+const INTRO_IMG = "https://waba-byte.github.io/survive-gram/bot-intro.png";
 
 const WELCOME =
 `🟪 WELCOME TO SURVIVE GRAM ⚡
@@ -34,9 +35,10 @@ export default {
 
     const msg = update.message;
     if (msg && typeof msg.text === "string" && msg.text.startsWith("/start")) {
-      await tg(env.BOT_TOKEN, "sendMessage", {
+      await tg(env.BOT_TOKEN, "sendPhoto", {
         chat_id: msg.chat.id,
-        text: WELCOME,
+        photo: INTRO_IMG,
+        caption: WELCOME,
         reply_markup: {
           inline_keyboard: [[ { text: "🎮 PLAY SURVIVE GRAM", web_app: { url: GAME_URL } } ]]
         }
