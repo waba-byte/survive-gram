@@ -178,6 +178,14 @@
   .tut-steps li b{font-size:16px;line-height:1.2;flex:none}
   #tutPlay{background:var(--green);color:#042033;font-family:inherit;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;padding:13px 28px;font-size:15px;cursor:pointer;box-shadow:0 0 16px var(--green-dim);width:100%}
   #tutPlay:active{transform:scale(.97)}
+  /* ---- SPLASH (schermata d'avvio, poster + barra di caricamento) ---- */
+  #splash{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:radial-gradient(circle at 50% 42%, #160a28 0%, var(--bg) 72%);transition:opacity .55s ease}
+  #splash.hide{opacity:0;pointer-events:none}
+  #splashImg{width:min(92%,560px);height:auto;border-radius:12px;filter:drop-shadow(0 0 28px rgba(176,38,255,.45));animation:splashpop .6s cubic-bezier(.2,1.3,.35,1) both}
+  @keyframes splashpop{0%{opacity:0;transform:scale(.92)}100%{opacity:1;transform:scale(1)}}
+  .splash-bar{position:relative;width:min(72%,320px);height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+  .splash-bar i{position:absolute;top:0;left:0;height:100%;width:38%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--red));box-shadow:0 0 10px var(--red);animation:splashload 1.25s ease-in-out infinite}
+  @keyframes splashload{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
   /* ---- MOBILE: HUD compatto a 2 colonne (la griglia e' gia' a piena larghezza) ---- */
   @media (max-width:640px){
     body{padding:8px}
@@ -192,6 +200,7 @@
 </style>
 </head>
 <body>
+  <div id="splash"><img id="splashImg" src="bot-intro.png" alt="Survive Gram"><div class="splash-bar"><i></i></div></div>
   <div id="flash"></div>
   <div id="crt"></div>
   <button class="sound-toggle" id="soundBtn">♪ ON</button>
@@ -293,7 +302,7 @@
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
   const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
   const skinBtns=Array.from(document.querySelectorAll(".skin-btn"));
-  const tutorial=$("tutorial"), tutGrid=$("tutGrid"), tutPlay=$("tutPlay"), tutLink=$("tutLink");
+  const tutorial=$("tutorial"), tutGrid=$("tutGrid"), tutPlay=$("tutPlay"), tutLink=$("tutLink"), splash=$("splash");
   const langBtn=$("langBtn"), langMenu=$("langMenu");
   const lbList=$("lbList"), nameInput=$("nameInput");
 
@@ -672,6 +681,12 @@
   buildTutGrid();
   let tutSeen=false; try{ tutSeen=!!localStorage.getItem("sg_tut_seen"); }catch(e){}
   if(!tutSeen) showTutorial();
+  // splash d'avvio: resta visibile sopra a tutto, poi sfuma (o si salta col tap)
+  if(splash){
+    const hideSplash=()=>{ splash.classList.add("hide"); setTimeout(()=>{ splash.style.display="none"; }, 600); };
+    const t=setTimeout(hideSplash, 1500);
+    splash.addEventListener("click", ()=>{ clearTimeout(t); hideSplash(); });
+  }
   setBalance(1000);drawGrid();drawScale();
 })();
 </script>
