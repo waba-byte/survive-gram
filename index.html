@@ -56,6 +56,18 @@
   .skin-btn.active{transform:scale(1.15)}
   .skin-btn.active.viola{border-color:#fff;box-shadow:0 0 12px #b026ff}
   .skin-btn.active.blu{border-color:#fff;box-shadow:0 0 12px #2aabee}
+  /* topbar compatta SOPRA la griglia: pallini skin + chip Saldo/Puntata/Moltipl./Vincita */
+  .topbar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:7px;width:100%;max-width:600px;margin-bottom:10px}
+  .chip{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);border:1px solid #1a0c0c;border-radius:7px;padding:4px 10px;line-height:1.15;min-width:60px}
+  .chip .lbl{font-size:8px;letter-spacing:1px;color:#8a7a6a;text-transform:uppercase}
+  .chip .val{font-size:16px;color:var(--green);text-shadow:0 0 5px var(--green-dim);display:inline-block;transform-origin:center}
+  .chip .val.red{color:var(--red);text-shadow:0 0 5px var(--red)}
+  .chip input{width:48px;background:#0a0705;border:1px solid var(--red-dim);color:var(--green);font-family:inherit;font-size:15px;padding:2px 3px;border-radius:4px;text-align:center}
+  .controls{display:flex;gap:10px;justify-content:center;width:100%;max-width:440px;margin-top:12px}
+  .controls button{flex:1}
+  .links{display:flex;gap:10px;justify-content:center;align-items:center;width:100%;max-width:470px;margin:10px auto 4px}
+  .links #lbLink{margin:0;flex:1;font-size:15px;padding:13px 14px}
+  .links #tutLink{margin:0;flex:none;white-space:nowrap}
   .arena{display:flex;justify-content:center;width:100%}
   .stage{
     /* layout a colonna: griglia (quadrata, piena larghezza) sopra, scala moltiplicatore
@@ -66,7 +78,7 @@
     padding:14px;
     box-shadow:0 0 30px rgba(176,38,255,.08) inset;
   }
-  .grid-wrap{position:relative;width:100%;max-width:560px;line-height:0}
+  .grid-wrap{position:relative;width:100%;max-width:min(560px,52vh);line-height:0}
   .leaderboard{width:222px;background:var(--panel);border:1px solid #1c1030;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 30px rgba(176,38,255,.08) inset}
   .lb-head{color:var(--green);letter-spacing:3px;font-size:15px;text-align:center;text-shadow:0 0 6px var(--green-dim)}
   .lb-me{display:flex;align-items:center;gap:8px;justify-content:center}
@@ -112,10 +124,10 @@
   .stat .val{font-size:20px;color:var(--green);text-shadow:0 0 6px var(--green-dim);margin-top:2px;display:inline-block;transform-origin:center}
   .stat .val.red{color:var(--red);text-shadow:0 0 6px var(--red)}
   /* pop/zoom della VINCITA ad ogni schivata (riavviato via reflow in survive()) */
-  .stat .val.winpop{animation:winpop .32s cubic-bezier(.2,1.4,.35,1)}
+  .val.winpop{animation:winpop .32s cubic-bezier(.2,1.4,.35,1)}
   @keyframes winpop{0%{transform:scale(1)}45%{transform:scale(1.32);text-shadow:0 0 14px var(--green)}100%{transform:scale(1)}}
   /* pulse piu' sobrio del moltiplicatore */
-  .stat .val.multpop{animation:multpop .32s ease-out}
+  .val.multpop{animation:multpop .32s ease-out}
   @keyframes multpop{0%{transform:scale(1)}45%{transform:scale(1.14);text-shadow:0 0 12px var(--red-glow)}100%{transform:scale(1)}}
   .betbox input{
     width:80px;background:#0a0705;border:1px solid var(--red-dim);color:var(--green);
@@ -188,14 +200,20 @@
   @keyframes splashload{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
   /* ---- MOBILE: HUD compatto a 2 colonne (la griglia e' gia' a piena larghezza) ---- */
   @media (max-width:640px){
-    body{padding:8px}
-    .stage{padding:10px;gap:10px}
-    .hud{gap:8px;margin-top:14px}
-    .stat{min-width:0;flex:1 1 calc(50% - 6px);padding:6px 8px}
-    .stat .lbl{font-size:9px;letter-spacing:1px}
-    .stat .val{font-size:17px}
-    .betbox input{width:100%}
-    #startBtn,#cashBtn{flex:1 1 calc(50% - 6px);padding:11px 8px;font-size:14px;letter-spacing:1px}
+    body{padding:7px}
+    header{margin-bottom:6px}
+    .stage{padding:8px;gap:8px}
+    .topbar{gap:6px;margin-bottom:8px}
+    .chip{padding:3px 8px;min-width:0}
+    .chip .val{font-size:15px}
+    .chip input{width:42px;font-size:14px}
+    .controls{margin-top:8px;gap:8px}
+    #startBtn,#cashBtn{padding:11px 8px;font-size:14px;letter-spacing:1px}
+    .msg{margin-top:8px;font-size:13px;letter-spacing:1px}
+    .links{margin-top:8px}
+    .links #lbLink{font-size:14px;padding:11px 10px}
+    .links #tutLink{font-size:12px}
+    .grid-wrap{max-width:min(560px,46vh)}   /* limita la griglia in altezza: tutto entra senza scroll */
   }
 </style>
 </head>
@@ -210,9 +228,13 @@
     <img class="logo" src="durov-neon-blue.png" width="50" height="50" alt="Survive Gram" decoding="async">
     <h1>Survive Gram</h1>
   </header>
-  <div class="skinpick">
+  <div class="topbar">
     <button class="skin-btn viola" data-skin="viola" aria-label="Viola" title="Viola"></button>
     <button class="skin-btn blu" data-skin="blu" aria-label="Blu" title="Blu"></button>
+    <div class="chip"><span class="lbl" data-i18n="hud_balance">Saldo</span><span class="val" id="balanceVal">1000.00</span></div>
+    <div class="chip"><span class="lbl" data-i18n="hud_bet">Puntata</span><input id="betInput" type="number" value="10" min="1" step="1"></div>
+    <div class="chip"><span class="lbl" data-i18n="hud_mult">Moltipl.</span><span class="val red" id="multVal">1.00x</span></div>
+    <div class="chip"><span class="lbl" data-i18n="hud_win">Vincita</span><span class="val" id="winVal">0.00</span></div>
   </div>
 
   <div class="arena">
@@ -225,19 +247,17 @@
     </div>
   </div>
 
-  <div class="hud">
-    <div class="stat"><div class="lbl" data-i18n="hud_balance">Saldo</div><div class="val" id="balanceVal">1000.00</div></div>
-    <div class="betbox stat"><div><div class="lbl" data-i18n="hud_bet">Puntata</div><input id="betInput" type="number" value="10" min="1" step="1"></div></div>
-    <div class="stat"><div class="lbl" data-i18n="hud_mult">Moltipl.</div><div class="val red" id="multVal">1.00x</div></div>
-    <div class="stat"><div class="lbl" data-i18n="hud_win">Vincita</div><div class="val" id="winVal">0.00</div></div>
+  <div class="controls">
     <button id="startBtn">START</button>
     <button id="cashBtn" disabled>CASH OUT</button>
   </div>
 
   <div class="msg" id="msg">Premi START, poi clicca una cella per schivare il laser.</div>
 
-  <a id="lbLink" href="classifica.html" data-i18n="btn_leaderboard">🏆 CLASSIFICA</a>
-  <button id="tutLink" data-i18n="tut_help">❔ Come si gioca</button>
+  <div class="links">
+    <a id="lbLink" href="classifica.html" data-i18n="btn_leaderboard">🏆 CLASSIFICA</a>
+    <button id="tutLink" data-i18n="tut_help">❔ Come si gioca</button>
+  </div>
 
   <div id="tutorial" hidden>
     <div class="tut-card">
@@ -683,9 +703,15 @@
   if(!tutSeen) showTutorial();
   // splash d'avvio: resta visibile sopra a tutto, poi sfuma (o si salta col tap)
   if(splash){
-    const hideSplash=()=>{ splash.classList.add("hide"); setTimeout(()=>{ splash.style.display="none"; }, 600); };
-    const t=setTimeout(hideSplash, 1500);
-    splash.addEventListener("click", ()=>{ clearTimeout(t); hideSplash(); });
+    const simg=$("splashImg");
+    let gone=false;
+    const hideSplash=()=>{ if(gone) return; gone=true; splash.classList.add("hide"); setTimeout(()=>{ splash.style.display="none"; }, 600); };
+    const ready=()=>setTimeout(hideSplash, 1100);                 // mostra l'immagine ~1.1s DOPO che si e' caricata
+    if(simg && simg.complete && simg.naturalWidth>0) ready();
+    else if(simg){ simg.addEventListener("load", ready); simg.addEventListener("error", ()=>setTimeout(hideSplash, 500)); }
+    else ready();
+    setTimeout(hideSplash, 5000);                                 // cap di sicurezza (se l'immagine non carica)
+    splash.addEventListener("click", hideSplash);
   }
   setBalance(1000);drawGrid();drawScale();
 })();
