@@ -126,7 +126,7 @@
   #lbLink{display:flex;align-items:center;justify-content:center;gap:8px;margin:28px auto 4px;width:100%;max-width:440px;box-sizing:border-box;font-family:inherit;font-weight:700;letter-spacing:3px;font-size:16px;text-decoration:none;color:var(--green);background:rgba(42,171,238,.08);border:2px solid var(--green-dim);border-radius:8px;padding:15px 22px;text-align:center;transition:transform .08s,box-shadow .15s,background .15s}
   #lbLink:active{transform:scale(.97)}
   #lbLink:hover{background:rgba(42,171,238,.16);box-shadow:0 0 16px var(--green-dim)}
-  .sound-toggle{position:fixed;top:14px;right:14px;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px}
+  .sound-toggle{position:fixed;top:14px;right:14px;z-index:120;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px}
   #langWrap{position:fixed;top:14px;left:14px;z-index:120}
   #langBtn{background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px;font-family:inherit;cursor:pointer;border-radius:4px}
   #langMenu{position:absolute;top:36px;left:0;background:var(--panel);border:1px solid #1c1030;border-radius:6px;padding:4px;display:flex;flex-direction:column;gap:2px;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.55)}
@@ -136,7 +136,7 @@
   #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
-  #themeBtn{top:82px}
+  #themeBtn{top:48px;left:14px;right:auto}
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
     background:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.22) 50%),
