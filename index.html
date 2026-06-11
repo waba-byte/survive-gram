@@ -40,12 +40,21 @@
     min-height:100%;padding:14px;
     user-select:none;-webkit-user-select:none;overflow-x:hidden;
   }
-  header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   header .logo{width:clamp(36px,10vw,50px);aspect-ratio:1/1;object-fit:contain;filter:drop-shadow(0 0 5px var(--green-dim))}
   header h1{
     color:var(--green);font-size:clamp(14px,4vw,26px);letter-spacing:clamp(1px,1vw,6px);font-weight:700;
     text-shadow:0 0 8px var(--green-dim);
   }
+  /* selettore skin sotto il nome: due pulsanti a colore FISSO (viola/blu) */
+  .skinpick{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+  .skin-btn{font-family:inherit;font-weight:700;letter-spacing:1px;font-size:12px;cursor:pointer;background:var(--panel);border:1px solid;border-radius:6px;padding:6px 14px;transition:transform .08s,box-shadow .15s,background .15s,color .15s,opacity .15s}
+  .skin-btn:active{transform:scale(.96)}
+  .skin-btn.viola{color:#c77dff;border-color:#5a1c80}
+  .skin-btn.blu{color:#74c8f5;border-color:#1c5a7a}
+  .skin-btn:not(.active){opacity:.55}
+  .skin-btn.active.viola{color:#fff;background:#2c0a40;border-color:#b026ff;box-shadow:0 0 12px #b026ff}
+  .skin-btn.active.blu{color:#fff;background:#0c3a55;border-color:#2aabee;box-shadow:0 0 12px #2aabee}
   .arena{display:flex;justify-content:center;width:100%}
   .stage{
     /* layout a colonna: griglia (quadrata, piena larghezza) sopra, scala moltiplicatore
@@ -136,7 +145,6 @@
   #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #crtBtn{top:48px}
-  #themeBtn{top:48px;left:14px;right:auto}
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
     background:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.22) 50%),
@@ -168,12 +176,15 @@
   <div id="crt"></div>
   <button class="sound-toggle" id="soundBtn">♪ ON</button>
   <button class="sound-toggle" id="crtBtn">▦ CRT</button>
-  <button class="sound-toggle" id="themeBtn" title="Cambia skin: Viola / Blu">🟣 VIOLA</button>
   <div id="langWrap"><button id="langBtn" title="Lingua / Language">🌐 IT</button><div id="langMenu" hidden></div></div>
   <header>
     <img class="logo" src="durov-neon-blue.png" width="50" height="50" alt="Survive Gram" decoding="async">
     <h1>Survive Gram</h1>
   </header>
+  <div class="skinpick">
+    <button class="skin-btn viola" data-skin="viola">🟣 VIOLA</button>
+    <button class="skin-btn blu" data-skin="blu">🔵 BLU</button>
+  </div>
 
   <div class="arena">
     <div class="stage" id="stage">
@@ -246,7 +257,8 @@
   const gridSvg=$("gridSvg"), scaleSvg=$("scaleSvg"), stage=$("stage"), deathFace=$("deathFace");
   const balanceVal=$("balanceVal"), multVal=$("multVal"), winVal=$("winVal");
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
-  const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt"), themeBtn=$("themeBtn");
+  const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
+  const skinBtns=Array.from(document.querySelectorAll(".skin-btn"));
   const langBtn=$("langBtn"), langMenu=$("langMenu");
   const lbList=$("lbList"), nameInput=$("nameInput");
 
@@ -572,14 +584,14 @@
   function applyTheme(t){
     theme=t;
     document.body.classList.toggle("theme-blue", t==="blu");
-    themeBtn.textContent = t==="blu" ? "🔵 BLU" : "🟣 VIOLA";
+    skinBtns.forEach(b=>b.classList.toggle("active", b.dataset.skin===t));
     deathFace.src = (t==="blu") ? "durov-neon-blue-lg.png" : "durov-neon-purple.png";   // precarica l'immagine giusta
     try{ localStorage.setItem("sg_theme", t); }catch(e){}
     const bg=THEME_BG[t]||THEME_BG.viola;
     const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content",bg);
     try{ if(TG&&tgv("6.1")){ TG.setHeaderColor(bg); TG.setBackgroundColor(bg); } }catch(e){}
   }
-  themeBtn.addEventListener("click",()=>applyTheme(theme==="blu"?"viola":"blu"));
+  skinBtns.forEach(b=>b.addEventListener("click",()=>applyTheme(b.dataset.skin)));
   // selettore lingua
   function langLabel(){ return "🌐 "+I18N.cur.toUpperCase(); }
   function buildLangMenu(){
