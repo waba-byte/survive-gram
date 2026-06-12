@@ -11,7 +11,7 @@
    ricarica con un URL "fresco" (?v=...) cosi' la Mini App si aggiorna da sola,
    senza che l'utente svuoti la cache. Loop-safe. */
 (function(){
-  var BUILD="10";
+  var BUILD="11";
   try{
     var u=new URLSearchParams(location.search);
     if(u.get("v")!==BUILD){
@@ -488,6 +488,14 @@
   }
   const fmt=m=>m>=10?m.toFixed(1):m.toFixed(2);
 
+  /* ---------- PROBABILITA' DI MORTE PER ROUND ----------
+     round<10 (fino a 3.84x): geometrica = 1/linee  -> la griglia che vedi = le odds reali.
+     da round 10 (3.84x) in poi: coda "jackpot" calibrata. Sopravvivenza per round che cala
+     progressivamente, cosi' arrivare a 96x (round 18) ha prob ~0.1%. Cap 96x invariato:
+     i moltiplicatori restano gli stessi, cambia solo il rischio (RTP piu' basso nella coda). */
+  const TAIL_SURV={10:0.72,11:0.663,12:0.606,13:0.549,14:0.491,15:0.434,16:0.377,17:0.32};
+  function deathProb(round,lines){ if(round<10) return 1/lines; const s=TAIL_SURV[round]; return (s!=null)?(1-s):(1/lines); }
+
   function el(tag,a){const e=document.createElementNS(SVG_NS,tag);for(const k in a)e.setAttribute(k,a[k]);return e;}
   function setBalance(v){state.balance=v;balanceVal.textContent=v.toFixed(2);}
   function setMult(){multVal.textContent=fmt(state.mult)+"x";}
@@ -570,7 +578,11 @@
   function fireLaser(selR,selC,cellEl){
     state.busy=true;
     const axis=state.axis, lines=axis==="h"?state.rows:state.cols;
-    const hitIndex=Math.floor(Math.random()*lines);
+    const sel=axis==="h"?selR:selC;
+    const dead=Math.random() < deathProb(state.round, lines);   // coda calibrata oltre 3.84x
+    let hitIndex;
+    if(dead || lines<=1){ hitIndex=sel; }                       // morte: il laser colpisce la tua linea
+    else { hitIndex=Math.floor(Math.random()*(lines-1)); if(hitIndex>=sel) hitIndex++; }   // sopravv.: una linea diversa
     const ctr=center(selR,selC), b=bounds();
     cellEl.classList.add("armed");
     setMsg("msg_charging",{axisUp:axis});
