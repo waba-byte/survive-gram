@@ -75,10 +75,12 @@ export default {
       if (!user || !user.id) return cors(json({ ok: false, error: "auth" }, 401));
       const taskId = String((body && body.taskId) || "").slice(0, 40);
       if (!taskId) return cors(json({ ok: false, error: "taskId" }, 400));
-      const doneKey = "done:" + taskId + ":" + user.id;
+      const _tk = (await kvTasks(env)).filter(x => x.id === taskId)[0];
+      const rev = (_tk && _tk.rev) || 1;                 // i completamenti sono contati per revisione
+      const doneKey = "done:" + taskId + ":" + rev + ":" + user.id;
       if (!(await env.TASKS.get(doneKey))) {
         await env.TASKS.put(doneKey, "1");
-        const aggKey = "agg:" + taskId;
+        const aggKey = "agg:" + taskId + ":" + rev;
         let agg = null; try { agg = JSON.parse(await env.TASKS.get(aggKey)); } catch (e) {}
         if (!agg || typeof agg !== "object") agg = { count: 0, recent: [] };
         agg.count = (agg.count || 0) + 1;
@@ -111,8 +113,9 @@ export default {
       if (!env.TASKS) return cors(json({ ok: false, error: "missing KV" }, 500));
       const tasks = await kvTasks(env), out = [];
       for (const t of tasks) {
-        let agg = null; try { agg = JSON.parse(await env.TASKS.get("agg:" + t.id)); } catch (e) {}
-        out.push({ id: t.id, title: (t.title && (t.title.it || t.title.en)) || t.id, count: (agg && agg.count) || 0, recent: (agg && agg.recent) || [] });
+        const rev = (t.rev) || 1;
+        let agg = null; try { agg = JSON.parse(await env.TASKS.get("agg:" + t.id + ":" + rev)); } catch (e) {}
+        out.push({ id: t.id, rev, title: (t.title && (t.title.it || t.title.en)) || t.id, count: (agg && agg.count) || 0, recent: (agg && agg.recent) || [] });
       }
       return cors(json({ ok: true, tasks: out }));
     }
@@ -200,7 +203,7 @@ function sanitizeTask(t) {
   const id = String(t.id || "").trim().slice(0, 40); if (!id) return null;
   const type = (t.type === "link") ? "link" : "stat";
   const o = { id, type, icon: String(t.icon || "⭐").slice(0, 4), reward: clampInt(t.reward, 0, 100000),
-    enabled: t.enabled !== false, title: pickLangs(t.title), desc: pickLangs(t.desc) };
+    enabled: t.enabled !== false, rev: clampInt(t.rev, 1, 1000000), title: pickLangs(t.title), desc: pickLangs(t.desc) };
   if (type === "stat") {
     o.stat = ["games", "dodges", "cashouts", "bestMult"].indexOf(t.stat) >= 0 ? t.stat : "games";
     o.goal = clampInt(t.goal, 1, 1000000);
@@ -250,6 +253,7 @@ const ADMIN_HTML = `<!DOCTYPE html>
  .b-prim{background:var(--green);color:#042033}
  .b-ghost{background:#15102a;color:var(--green);padding:8px 11px}
  .b-del{background:#2c0a40;color:#f3a6ff;padding:7px 10px}
+ .b-pub{background:#0c3a55;color:#7fd3ff}
  .card{background:var(--panel);border:1px solid #1c1030;border-radius:8px;padding:12px;margin-bottom:10px}
  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
  .f{display:flex;flex-direction:column}
@@ -321,9 +325,11 @@ const ADMIN_HTML = `<!DOCTYPE html>
      var fi=field("Icona", mkInput(t.icon,function(v){t.icon=v;},"text","⭐")); fi.style.maxWidth="64px"; r1.appendChild(fi);
      var fid=field("ID", mkInput(t.id,function(v){t.id=v;},"text","id")); fid.style.maxWidth="140px"; r1.appendChild(fid);
      var ts=document.createElement("select"); [["stat","Automatica"],["link","Link"]].forEach(function(p){var o=document.createElement("option");o.value=p[0];o.textContent=p[1];if(t.type===p[0])o.selected=true;ts.appendChild(o);}); ts.addEventListener("change",function(){t.type=ts.value;render();}); var fts=field("Tipo",ts); fts.style.maxWidth="130px"; r1.appendChild(fts);
+     var rv=document.createElement("span"); rv.className="muted"; rv.style.alignSelf="center"; rv.textContent="rev "+((t.rev)||1); r1.appendChild(rv);
      var sp=document.createElement("div"); sp.style.flex="1"; r1.appendChild(sp);
      r1.appendChild(btn("b-ghost","↑",function(){ if(i>0){var x=tasks[i-1];tasks[i-1]=tasks[i];tasks[i]=x;render();} }));
      r1.appendChild(btn("b-ghost","↓",function(){ if(i<tasks.length-1){var x=tasks[i+1];tasks[i+1]=tasks[i];tasks[i]=x;render();} }));
+     r1.appendChild(btn("b-pub","🔄 Ripubblica",function(){ republish(i); }));
      r1.appendChild(btn("b-del","🗑",function(){ tasks.splice(i,1); render(); }));
      c.appendChild(r1);
 
@@ -344,11 +350,18 @@ const ADMIN_HTML = `<!DOCTYPE html>
    });
  }
 
- function addTask(){ tasks.push({id:"task"+Date.now(), type:"stat", icon:"⭐", stat:"games", goal:5, reward:100, enabled:true, title:{}, desc:{}}); render(); }
- function save(){
+ function addTask(){ tasks.push({id:"task"+Date.now(), type:"stat", icon:"⭐", stat:"games", goal:5, reward:100, enabled:true, rev:1, title:{}, desc:{}}); render(); }
+ function save(msg){
    fetch("/admin/tasks",{method:"POST",headers:hdr(),body:JSON.stringify({tasks:tasks})}).then(function(r){return r.json();})
-    .then(function(d){ if(d&&d.ok){ note("Salvato ✓ ("+d.count+" missioni)"); } else { note("Errore: "+((d&&d.error)||"?"),true); } })
+    .then(function(d){ if(d&&d.ok){ note(msg||("Salvato ✓ ("+d.count+" missioni)")); render(); loadComp(); } else { note("Errore: "+((d&&d.error)||"?"),true); } })
     .catch(function(){ note("Errore di rete",true); });
+ }
+ /* RIPUBBLICA una singola missione: incrementa la revisione -> torna disponibile anche a chi l'aveva completata. */
+ function republish(i){
+   var nm=(tasks[i].title&&(tasks[i].title[lang]||tasks[i].title.it||tasks[i].title.en))||tasks[i].id;
+   if(!confirm("Riproporre «"+nm+"» a TUTTI gli utenti?\\nChi l'aveva già completata la rivedrà come disponibile. Verranno salvate anche le altre modifiche in sospeso.")) return;
+   tasks[i].rev=((tasks[i].rev)||1)+1;
+   save("🔄 Ripubblicata ✓ — di nuovo disponibile (rev "+tasks[i].rev+")");
  }
  function loadComp(){ fetch("/admin/completions",{headers:hdr()}).then(function(r){return r.json();}).then(function(d){ renderComp((d&&d.tasks)||[]); }); }
  function renderComp(rows){
@@ -365,7 +378,7 @@ const ADMIN_HTML = `<!DOCTYPE html>
  el("enter").onclick=enter;
  el("pw").addEventListener("keydown",function(e){ if(e.key==="Enter") enter(); });
  el("add").onclick=addTask;
- el("save").onclick=save;
+ el("save").onclick=function(){ save(); };
  el("refresh").onclick=loadComp;
  var n0=document.createElement("div"); n0.id="note"; document.body.appendChild(n0);
  if(key()) enter();

@@ -78,6 +78,7 @@
   }
 
   function find(id){ return ACTIVE.filter(t=>t.id===id)[0]||null; }
+  function trev(t){ return (t&&t.rev)||1; }   // revisione missione: se il pannello la incrementa, torna disponibile per chi l'aveva completata
   /* scarica l'elenco missioni dal server (con cache di riserva); poi chiama cb. */
   function fetchDefs(cb){
     let done=false; const finish=function(){ if(done) return; done=true; if(cb) cb(); };
@@ -99,7 +100,7 @@
   function complete(t){
     if(!t) return false;
     if(t.type==="stat") return statValue(t) >= t.goal;
-    if(t.type==="link") return !!(data&&data.opened[t.id]);
+    if(t.type==="link") return !!(data&&data.opened[t.id]===trev(t));
     return false;
   }
   function prog(t){ if(!t||t.type!=="stat") return null; return { raw:statValue(t), goal:t.goal }; }
@@ -119,16 +120,16 @@
         else window.open(t.url,"_blank");
       }
     }catch(e){ try{ window.open(t.url||SHARE_URL,"_blank"); }catch(_){} }
-    data.opened[id]=1; save();
+    data.opened[id]=trev(t); save();
   }
 
   /* riscatta i punti GRAM di una missione completata (una sola volta). */
   function claim(id){
     if(!data) load();
     const t=find(id); if(!t) return false;
-    if(data.claimed[id]) return false;
+    if(data.claimed[id]===trev(t)) return false;   // già riscattata a questa revisione
     if(!complete(t)) return false;
-    data.claimed[id]=1; data.gram=(data.gram||0)+(t.reward||0); save();
+    data.claimed[id]=trev(t); data.gram=(data.gram||0)+(t.reward||0); save();
     report(id);   // notifica il server (pannello admin) — solo dentro Telegram
     return true;
   }
@@ -139,8 +140,8 @@
 
   window.TASKS={
     load, cloudLoad, fetchDefs, save, bump, claim, openTask, list, prog, complete, text,
-    isClaimed:id=>!!(data&&data.claimed[id]),
-    isOpened :id=>!!(data&&data.opened[id]),
+    isClaimed:id=>{ const t=find(id); return !!(data&&data.claimed[id]===trev(t)); },
+    isOpened :id=>{ const t=find(id); return !!(data&&data.opened[id]===trev(t)); },
     gram:()=>(data?data.gram:0)|0
   };
 })();
