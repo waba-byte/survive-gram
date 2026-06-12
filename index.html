@@ -11,7 +11,7 @@
    ricarica con un URL "fresco" (?v=...) cosi' la Mini App si aggiorna da sola,
    senza che l'utente svuoti la cache. Loop-safe. */
 (function(){
-  var BUILD="4";
+  var BUILD="5";
   try{
     var u=new URLSearchParams(location.search);
     if(u.get("v")!==BUILD){
@@ -183,7 +183,7 @@
   #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
   #musicBtn{top:48px}
-  #crtBtn{top:82px}
+  #crtBtn{top:48px;left:14px;right:auto}   /* sotto il pulsante lingua (in alto a sinistra) */
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
     background:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.22) 50%),
