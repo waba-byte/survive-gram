@@ -11,7 +11,7 @@
    ricarica con un URL "fresco" (?v=...) cosi' la Mini App si aggiorna da sola,
    senza che l'utente svuoti la cache. Loop-safe. */
 (function(){
-  var BUILD="5";
+  var BUILD="6";
   try{
     var u=new URLSearchParams(location.search);
     if(u.get("v")!==BUILD){
@@ -26,7 +26,8 @@
 </script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="lb.js?v=4"></script>
-<script src="i18n.js?v=4"></script>
+<script src="i18n.js?v=5"></script>
+<script src="tasks.js?v=1"></script>
 <style>
   :root{
     /* tema: "viola morte" (ex rosso) + blu Telegram (ex verde) */
@@ -91,8 +92,7 @@
   .controls{display:flex;gap:10px;justify-content:center;width:100%;max-width:440px;margin-top:12px}
   .controls button{flex:1}
   .links{display:flex;gap:10px;justify-content:center;align-items:center;width:100%;max-width:470px;margin:10px auto 4px}
-  .links #lbLink{margin:0;flex:1;font-size:15px;padding:13px 14px}
-  .links #tutLink{margin:0;flex:none;white-space:nowrap}
+  .links #lbLink,.links #taskLink{margin:0;flex:1;font-size:15px;padding:13px 10px;letter-spacing:1.5px}
   .arena{display:flex;justify-content:center;width:100%}
   .stage{
     /* layout a colonna: griglia (quadrata, piena larghezza) sopra, scala moltiplicatore
@@ -170,9 +170,11 @@
   @keyframes cashpulse{0%,100%{box-shadow:0 0 10px var(--red)}50%{box-shadow:0 0 22px var(--red-glow)}}
   .msg{margin:12px auto 0;min-height:22px;max-width:480px;width:100%;font-size:16px;font-weight:700;letter-spacing:1.5px;text-align:center;color:#7fd3ff;text-shadow:0 0 10px var(--green);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:9px 12px}
   .msg.dead{color:#f3a6ff;text-shadow:0 0 12px var(--red);border-color:rgba(176,38,255,.3)}
-  #lbLink{display:flex;align-items:center;justify-content:center;gap:8px;margin:28px auto 4px;width:100%;max-width:440px;box-sizing:border-box;font-family:inherit;font-weight:700;letter-spacing:3px;font-size:16px;text-decoration:none;color:var(--green);background:rgba(42,171,238,.08);border:2px solid var(--green-dim);border-radius:8px;padding:15px 22px;text-align:center;transition:transform .08s,box-shadow .15s,background .15s}
-  #lbLink:active{transform:scale(.97)}
+  #lbLink,#taskLink{display:flex;align-items:center;justify-content:center;gap:8px;margin:28px auto 4px;width:100%;max-width:440px;box-sizing:border-box;font-family:inherit;font-weight:700;letter-spacing:3px;font-size:16px;text-decoration:none;color:var(--green);background:rgba(42,171,238,.08);border:2px solid var(--green-dim);border-radius:8px;padding:15px 22px;text-align:center;transition:transform .08s,box-shadow .15s,background .15s}
+  #lbLink:active,#taskLink:active{transform:scale(.97)}
   #lbLink:hover{background:rgba(42,171,238,.16);box-shadow:0 0 16px var(--green-dim)}
+  #taskLink{color:var(--red-glow);background:rgba(176,38,255,.10);border-color:var(--red-dim)}
+  #taskLink:hover{background:rgba(176,38,255,.18);box-shadow:0 0 16px var(--red)}
   .sound-toggle{position:fixed;top:14px;right:14px;z-index:120;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px;border-radius:4px;cursor:pointer;font-family:inherit}
   #langWrap{position:fixed;top:14px;left:14px;z-index:120}
   #langBtn{background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px;font-family:inherit;cursor:pointer;border-radius:4px}
@@ -249,8 +251,8 @@
     #startBtn,#cashBtn{padding:11px 8px;font-size:14px;letter-spacing:1px}
     .msg{margin-top:8px;font-size:14px;padding:7px 10px;letter-spacing:1px}
     .links{margin-top:8px}
-    .links #lbLink{font-size:14px;padding:11px 10px}
-    .links #tutLink{font-size:12px}
+    .links #lbLink,.links #taskLink{font-size:13px;padding:11px 6px;letter-spacing:1px}
+    #tutLink{font-size:12px}
     .grid-wrap{max-width:min(560px,44vh)}   /* griglia limitata in altezza: tutto entra senza scroll */
   }
 </style>
@@ -298,8 +300,9 @@
 
   <div class="links">
     <a id="lbLink" href="classifica.html" data-i18n="btn_leaderboard">🏆 CLASSIFICA</a>
-    <button id="tutLink" data-i18n="tut_help">❔ Come si gioca</button>
+    <a id="taskLink" href="task.html" data-i18n="btn_tasks">🎯 MISSIONI</a>
   </div>
+  <button id="tutLink" data-i18n="tut_help">❔ Come si gioca</button>
 
 
   <div id="tutorial" hidden>
@@ -606,6 +609,7 @@
     if(cutAxis==="h"){ state.rows--; state.axis="v"; }
     else             { state.cols--; state.axis="h"; }
     state.mult=multAfter(state.round); setMult(); setWin(); popWin(); drawScale();
+    if(window.TASKS){ TASKS.bump("dodges",1); TASKS.bump("bestMult",state.mult,"max"); }   // missioni
     const finish=()=>{
       drawGrid(); state.busy=false;
       if(state.round>=MAX_ROUNDS){ state.maxed=true; setMsg("msg_max",{mult:fmt(state.mult)}); }
@@ -658,6 +662,7 @@
   function cashOut(){
     if(!state.playing||state.busy) return;
     const win=state.bet*state.mult; setBalance(state.balance+win);
+    if(window.TASKS){ TASKS.bump("cashouts",1); TASKS.bump("bestMult",state.mult,"max"); }   // missioni
     LB.addScore(win-state.bet);         // netto: profitto (puntata gia' rientrata)
     state.playing=false;state.maxed=false;cashBtn.disabled=true;startBtn.disabled=false;betInput.disabled=false;   // riapri la puntata
     haptic("cash"); sfx.cash();
@@ -676,6 +681,7 @@
     startBtn.disabled=true;cashBtn.disabled=false;betInput.disabled=true;   // puntata bloccata durante la partita
     setMsg("msg_pick",{axis:"h"});
     startMusic();
+    if(window.TASKS) TASKS.bump("games",1);   // missioni: partite giocate
   }
 
   /* ---------- EFFETTI ---------- */
@@ -782,6 +788,7 @@
     try{ if(tgv("7.7")&&TG.disableVerticalSwipes) TG.disableVerticalSwipes(); }catch(e){}
   }
   LB.cloudLoad();
+  if(window.TASKS){ TASKS.load(); TASKS.cloudLoad(); }   // missioni: carica statistiche/progresso
   I18N.apply(document); langBtn.textContent=langLabel(); buildLangMenu(); setMsg("msg_intro");
   applyTheme(theme);
   buildTutGrid();

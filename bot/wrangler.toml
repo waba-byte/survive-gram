@@ -1,3 +1,8 @@
 name = "survive-gram-bot"
 main = "worker.js"
 compatibility_date = "2024-11-01"
+
+# Archivio missioni + registro completamenti (pannello admin)
+[[kv_namespaces]]
+binding = "TASKS"
+id = "486170a7951d4fb689c2768ac6aa0560"
