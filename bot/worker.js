@@ -75,6 +75,7 @@ export default {
       if (!user || !user.id) return cors(json({ ok: false, error: "auth" }, 401));
       const taskId = String((body && body.taskId) || "").slice(0, 40);
       if (!taskId) return cors(json({ ok: false, error: "taskId" }, 400));
+      await env.TASKS.put("name:" + user.id, user.username ? ("@" + user.username) : (user.first_name || ("id" + user.id)));  // directory id->nome (per i referral)
       const _tk = (await kvTasks(env)).filter(x => x.id === taskId)[0];
       const rev = (_tk && _tk.rev) || 1;                 // i completamenti sono contati per revisione
       const doneKey = "done:" + taskId + ":" + rev + ":" + user.id;
@@ -89,6 +90,31 @@ export default {
         if (agg.recent.length > 50) agg.recent.length = 50;
         await env.TASKS.put(aggKey, JSON.stringify(agg));
       }
+      return cors(json({ ok: true }));
+    }
+
+    /* ---------- REFERRAL: l'amico è arrivato dal link di invito (?startapp=ref_<id>) ---------- */
+    if (path === "/ref" && method === "POST") {
+      if (!env.BOT_TOKEN) return cors(json({ ok: false, error: "missing BOT_TOKEN" }, 500));
+      if (!env.TASKS) return cors(json({ ok: false, error: "missing KV" }, 500));
+      let body; try { body = await request.json(); } catch (e) { return cors(json({ ok: false, error: "bad json" }, 400)); }
+      const user = await checkInitData(body && body.initData, env.BOT_TOKEN);
+      if (!user || !user.id) return cors(json({ ok: false, error: "auth" }, 401));
+      const inviter = String((body && body.inviter) || "").replace(/[^0-9]/g, "").slice(0, 20);
+      if (!inviter) return cors(json({ ok: false, error: "inviter" }, 400));
+      const newId = String(user.id);
+      const uname = user.username ? ("@" + user.username) : (user.first_name || ("id" + newId));
+      await env.TASKS.put("name:" + newId, uname);
+      if (inviter === newId) return cors(json({ ok: true, self: true }));                       // niente auto-invito
+      if (await env.TASKS.get("refseen:" + newId)) return cors(json({ ok: true, dup: true }));   // ogni amico contato una sola volta
+      await env.TASKS.put("refseen:" + newId, inviter);
+      const aggKey = "refagg:" + inviter;
+      let agg = null; try { agg = JSON.parse(await env.TASKS.get(aggKey)); } catch (e) {}
+      if (!agg || typeof agg !== "object") agg = { count: 0, recent: [] };
+      agg.count = (agg.count || 0) + 1;
+      (agg.recent = agg.recent || []).unshift({ n: uname, t: Date.now() });
+      if (agg.recent.length > 50) agg.recent.length = 50;
+      await env.TASKS.put(aggKey, JSON.stringify(agg));
       return cors(json({ ok: true }));
     }
 
@@ -118,6 +144,21 @@ export default {
         out.push({ id: t.id, rev, title: (t.title && (t.title.it || t.title.en)) || t.id, count: (agg && agg.count) || 0, recent: (agg && agg.recent) || [] });
       }
       return cors(json({ ok: true, tasks: out }));
+    }
+
+    if (path === "/admin/referrals" && method === "GET") {
+      if (!adminOk(request, env)) return cors(json({ ok: false, error: "unauthorized" }, 401));
+      if (!env.TASKS) return cors(json({ ok: false, error: "missing KV" }, 500));
+      const ls = await env.TASKS.list({ prefix: "refagg:" });
+      const out = [];
+      for (const k of ls.keys) {
+        const inviter = k.name.slice(7);
+        let agg = null; try { agg = JSON.parse(await env.TASKS.get(k.name)); } catch (e) {}
+        const nm = await env.TASKS.get("name:" + inviter);
+        out.push({ inviter, name: nm || ("id" + inviter), count: (agg && agg.count) || 0, recent: (agg && agg.recent) || [] });
+      }
+      out.sort((a, b) => b.count - a.count);
+      return cors(json({ ok: true, referrers: out }));
     }
 
     /* ---------- /invoice : pagamento Stars (CHAD, in pausa) ---------- */
@@ -293,6 +334,9 @@ const ADMIN_HTML = `<!DOCTYPE html>
    <h2>📊 Completamenti</h2>
    <button class="b-ghost" id="refresh" style="margin-bottom:10px">↻ Aggiorna</button>
    <table><thead><tr><th>Missione</th><th>Completata</th><th>Ultimi utenti</th></tr></thead><tbody id="comp"></tbody></table>
+   <h2>🔗 Inviti (referral)</h2>
+   <button class="b-ghost" id="refreshRef" style="margin-bottom:10px">↻ Aggiorna</button>
+   <table><thead><tr><th>Invitante</th><th>Amici portati</th><th>Chi</th></tr></thead><tbody id="refs"></tbody></table>
    <p class="muted" style="margin:18px 0 30px">Le modifiche sono immediate: gli utenti le ricevono alla prossima apertura della pagina Missioni (nessun nuovo rilascio).</p>
  </div>
 <script>
@@ -312,7 +356,7 @@ const ADMIN_HTML = `<!DOCTYPE html>
      if(r.status===401){ el("err").textContent="Password errata."; localStorage.removeItem(KEY); return; }
      return r.json().then(function(d){
        el("login").style.display="none"; el("app").style.display="block";
-       buildLang(); renderComp((d&&d.tasks)||[]);
+       buildLang(); renderComp((d&&d.tasks)||[]); loadRefs();
        fetch("/tasks").then(function(x){return x.json();}).then(function(t){ tasks=(t&&t.tasks)||[]; render(); });
      });
    }).catch(function(){ el("err").textContent="Errore di rete."; });
@@ -372,6 +416,17 @@ const ADMIN_HTML = `<!DOCTYPE html>
    save("🔄 Ripubblicata ✓ — di nuovo disponibile (rev "+tasks[i].rev+")");
  }
  function loadComp(){ fetch("/admin/completions",{headers:hdr()}).then(function(r){return r.json();}).then(function(d){ renderComp((d&&d.tasks)||[]); }); }
+ function loadRefs(){ fetch("/admin/referrals",{headers:hdr()}).then(function(r){return r.json();}).then(function(d){ renderRefs((d&&d.referrers)||[]); }); }
+ function renderRefs(rows){
+   var b=el("refs"); b.innerHTML="";
+   if(!rows.length){ b.innerHTML="<tr><td colspan='3' class='muted'>Nessun invito ancora.</td></tr>"; return; }
+   rows.forEach(function(r){
+     var names=(r.recent||[]).map(function(x){return x.n;}).slice(0,15).join(", ");
+     var tr=document.createElement("tr");
+     tr.innerHTML="<td>"+esc(r.name)+"<br><span class='muted'>id "+esc(r.inviter)+"</span></td><td>"+(r.count||0)+"</td><td class='muted'>"+esc(names)+"</td>";
+     b.appendChild(tr);
+   });
+ }
  function renderComp(rows){
    var b=el("comp"); b.innerHTML="";
    if(!rows.length){ b.innerHTML="<tr><td colspan='3' class='muted'>Nessun dato.</td></tr>"; return; }
@@ -388,6 +443,7 @@ const ADMIN_HTML = `<!DOCTYPE html>
  el("add").onclick=addTask;
  el("save").onclick=function(){ save(); };
  el("refresh").onclick=loadComp;
+ el("refreshRef").onclick=loadRefs;
  var n0=document.createElement("div"); n0.id="note"; document.body.appendChild(n0);
  if(key()) enter();
 </script>

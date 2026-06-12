@@ -97,6 +97,19 @@
       fetch(WORKER+"/claim",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({initData:TG.initData,taskId:taskId})}).catch(function(){});
     } }catch(e){}
   }
+  /* se l'utente è arrivato da un link di invito (?startapp=ref_<id>), segnala il referral al server (una volta sola). */
+  function referral(){
+    try{
+      if(!TG||!TG.initData) return;
+      const sp=TG.initDataUnsafe&&TG.initDataUnsafe.start_param;
+      if(!sp||typeof sp!=="string") return;
+      const m=sp.match(/^ref_(\d+)$/); if(!m) return;
+      if(localStorage.getItem("sg_ref_sent")==="1") return;   // già attribuito una volta
+      fetch(WORKER+"/ref",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({initData:TG.initData,inviter:m[1]})})
+        .then(function(){ try{ localStorage.setItem("sg_ref_sent","1"); }catch(e){} })
+        .catch(function(){});
+    }catch(e){}
+  }
   function statValue(t){ if(!data) load(); return data.stats[t.stat]||0; }
   function complete(t){
     if(!t) return false;
@@ -143,7 +156,7 @@
   function list(){ return ACTIVE.filter(t=> t.enabled!==false && (t.type!=="link" || (t.url&&t.url.length>4)) ); }
 
   window.TASKS={
-    load, cloudLoad, fetchDefs, save, bump, claim, openTask, list, prog, complete, text,
+    load, cloudLoad, fetchDefs, referral, save, bump, claim, openTask, list, prog, complete, text,
     isClaimed:id=>{ const t=find(id); return !!(data&&data.claimed[id]===trev(t)); },
     isOpened :id=>{ const t=find(id); return !!(data&&data.opened[id]===trev(t)); },
     gram:()=>(data?data.gram:0)|0
