@@ -11,7 +11,7 @@
    ricarica con un URL "fresco" (?v=...) cosi' la Mini App si aggiorna da sola,
    senza che l'utente svuoti la cache. Loop-safe. */
 (function(){
-  var BUILD="3";
+  var BUILD="4";
   try{
     var u=new URLSearchParams(location.search);
     if(u.get("v")!==BUILD){
@@ -25,8 +25,8 @@
 })();
 </script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="lb.js?v=3"></script>
-<script src="i18n.js?v=3"></script>
+<script src="lb.js?v=4"></script>
+<script src="i18n.js?v=4"></script>
 <style>
   :root{
     /* tema: "viola morte" (ex rosso) + blu Telegram (ex verde) */
@@ -216,6 +216,15 @@
   .tut-steps li b{font-size:16px;line-height:1.2;flex:none}
   #tutPlay{background:var(--green);color:#042033;font-family:inherit;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;padding:13px 28px;font-size:15px;cursor:pointer;box-shadow:0 0 16px var(--green-dim);width:100%}
   #tutPlay:active{transform:scale(.97)}
+  /* popup promemoria (ogni 24h): imposta puntata -> START */
+  #hint{position:fixed;inset:0;z-index:210;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,2,8,.7)}
+  #hint[hidden]{display:none}
+  .hint-card{background:var(--panel);border:1px solid var(--green-dim);border-radius:14px;max-width:320px;width:100%;padding:20px;box-shadow:0 0 30px rgba(42,171,238,.25);animation:tutpop .3s cubic-bezier(.2,1.4,.35,1) both}
+  .hint-row{display:flex;align-items:center;gap:11px;text-align:left;margin-bottom:13px;font-size:15px;line-height:1.3;color:var(--txt)}
+  .hint-row b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--green);color:#042033;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+  #hintOk{margin-top:4px;width:100%;background:var(--green);color:#042033;font-family:inherit;font-weight:700;letter-spacing:1px;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer}
+  #hintOk:active{transform:scale(.97)}
+  .statbox input:disabled{opacity:.5;cursor:not-allowed}   /* puntata bloccata durante la partita */
   /* ---- SPLASH (poster d'avvio + barra di caricamento) ---- */
   #splash{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:radial-gradient(circle at 50% 42%, #160a28 0%, var(--bg) 72%);transition:opacity .55s ease}
   #splash.hide{opacity:0;pointer-events:none}
@@ -306,6 +315,14 @@
     </div>
   </div>
 
+  <div id="hint" hidden>
+    <div class="hint-card">
+      <div class="hint-row"><b>1</b><span data-i18n="hint_step1">Imposta la PUNTATA</span></div>
+      <div class="hint-row"><b>2</b><span data-i18n="hint_step2">poi premi START e schiva i laser</span></div>
+      <button id="hintOk" data-i18n="hint_ok">Ho capito</button>
+    </div>
+  </div>
+
 <script>
 (function(){
   "use strict";
@@ -357,6 +374,7 @@
   const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt"), musicBtn=$("musicBtn");
   const skinBtns=Array.from(document.querySelectorAll(".skin-btn"));
   const tutorial=$("tutorial"), tutGrid=$("tutGrid"), tutPlay=$("tutPlay"), tutLink=$("tutLink"), splash=$("splash");
+  const hint=$("hint"), hintOk=$("hintOk");
   const langBtn=$("langBtn"), langMenu=$("langMenu");
   const lbList=$("lbList"), nameInput=$("nameInput");
 
@@ -631,7 +649,7 @@
   function gameOver(){
     state.playing=false;state.busy=false;
     LB.addScore(-state.bet);            // netto: perdita della puntata
-    cashBtn.disabled=true;startBtn.disabled=false;
+    cashBtn.disabled=true;startBtn.disabled=false;betInput.disabled=false;   // riapri la puntata
     setMsg("msg_hit",{bet:state.bet.toFixed(2)},true);
     drawScale();
     stopMusic();
@@ -641,7 +659,7 @@
     if(!state.playing||state.busy) return;
     const win=state.bet*state.mult; setBalance(state.balance+win);
     LB.addScore(win-state.bet);         // netto: profitto (puntata gia' rientrata)
-    state.playing=false;state.maxed=false;cashBtn.disabled=true;startBtn.disabled=false;
+    state.playing=false;state.maxed=false;cashBtn.disabled=true;startBtn.disabled=false;betInput.disabled=false;   // riapri la puntata
     haptic("cash"); sfx.cash();
     setMsg("msg_cashed",{win:win.toFixed(2),mult:fmt(state.mult)});
     stopMusic();
@@ -655,7 +673,7 @@
     setBalance(state.balance-bet);
     Object.assign(state,{playing:true,busy:false,maxed:false,rows:START,cols:START,round:0,mult:1,bet,axis:"h"});
     setMult();setWin();drawGrid();drawScale();
-    startBtn.disabled=true;cashBtn.disabled=false;
+    startBtn.disabled=true;cashBtn.disabled=false;betInput.disabled=true;   // puntata bloccata durante la partita
     setMsg("msg_pick",{axis:"h"});
     startMusic();
   }
@@ -730,6 +748,11 @@
   tutPlay.addEventListener("click",closeTutorial);
   tutLink.addEventListener("click",showTutorial);
   tutorial.addEventListener("click",e=>{ if(e.target===tutorial) closeTutorial(); });
+  // popup promemoria "imposta puntata -> START" (ogni 24h)
+  function showHint(){ if(hint) hint.hidden=false; }
+  function closeHint(){ if(hint){ hint.hidden=true; try{ localStorage.setItem("sg_hint_ts", String(Date.now())); }catch(e){} } }
+  if(hintOk) hintOk.addEventListener("click", closeHint);
+  if(hint) hint.addEventListener("click", e=>{ if(e.target===hint) closeHint(); });
   // selettore lingua
   function langLabel(){ return "🌐 "+I18N.cur.toUpperCase(); }
   function buildLangMenu(){
@@ -763,7 +786,8 @@
   applyTheme(theme);
   buildTutGrid();
   let tutSeen=false; try{ tutSeen=!!localStorage.getItem("sg_tut_seen"); }catch(e){}
-  if(!tutSeen) showTutorial();
+  if(!tutSeen){ showTutorial(); }
+  else { let last=0; try{ last=+localStorage.getItem("sg_hint_ts")||0; }catch(e){} if(Date.now()-last > 86400000) showHint(); }   // promemoria ogni 24h
   // splash d'avvio: poster a tutto schermo, poi sfuma (agganciato al load dell'immagine; tap per saltare)
   if(splash){
     const simg=$("splashImg");
