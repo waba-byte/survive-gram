@@ -11,7 +11,7 @@
    ricarica con un URL "fresco" (?v=...) cosi' la Mini App si aggiorna da sola,
    senza che l'utente svuoti la cache. Loop-safe. */
 (function(){
-  var BUILD="6";
+  var BUILD="7";
   try{
     var u=new URLSearchParams(location.search);
     if(u.get("v")!==BUILD){
@@ -91,7 +91,7 @@
   .statbox input{width:100%;max-width:62px;background:#0a0705;border:1px solid var(--red-dim);color:var(--green);font-family:inherit;font-size:18px;padding:3px;border-radius:4px;text-align:center}
   .controls{display:flex;gap:10px;justify-content:center;width:100%;max-width:440px;margin-top:12px}
   .controls button{flex:1}
-  .links{display:flex;gap:10px;justify-content:center;align-items:center;width:100%;max-width:470px;margin:10px auto 4px}
+  .links{display:flex;gap:10px;justify-content:center;align-items:center;width:100%;max-width:470px;margin:22px auto 4px}
   .links #lbLink,.links #taskLink{margin:0;flex:1;font-size:15px;padding:13px 10px;letter-spacing:1.5px}
   .arena{display:flex;justify-content:center;width:100%}
   .stage{
@@ -250,10 +250,10 @@
     .controls{margin-top:8px;gap:8px}
     #startBtn,#cashBtn{padding:11px 8px;font-size:14px;letter-spacing:1px}
     .msg{margin-top:8px;font-size:14px;padding:7px 10px;letter-spacing:1px}
-    .links{margin-top:8px}
+    .links{margin-top:20px}
     .links #lbLink,.links #taskLink{font-size:13px;padding:11px 6px;letter-spacing:1px}
     #tutLink{font-size:12px}
-    .grid-wrap{max-width:min(560px,44vh)}   /* griglia limitata in altezza: tutto entra senza scroll */
+    .grid-wrap{max-width:min(560px,42vh)}   /* griglia limitata in altezza: tutto entra senza scroll */
   }
 </style>
 </head>
