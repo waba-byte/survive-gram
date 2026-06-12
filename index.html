@@ -57,12 +57,19 @@
   .skin-btn.active.viola{border-color:#fff;box-shadow:0 0 12px #b026ff}
   .skin-btn.active.blu{border-color:#fff;box-shadow:0 0 12px #2aabee}
   /* topbar compatta SOPRA la griglia: pallini skin + chip Saldo/Puntata/Moltipl./Vincita */
-  .topbar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:7px;width:100%;max-width:600px;margin-bottom:10px}
-  .chip{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);border:1px solid #1a0c0c;border-radius:7px;padding:4px 10px;line-height:1.15;min-width:60px}
+  /* topbar compatta SOPRA la griglia: pallini skin + Saldo/Vincita */
+  .topbar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;width:100%;max-width:440px;margin-bottom:10px}
+  .chip{display:flex;flex-direction:column;align-items:center;background:var(--panel);border:1px solid #1a0c0c;border-radius:7px;padding:4px 12px;line-height:1.2;min-width:76px}
   .chip .lbl{font-size:8px;letter-spacing:1px;color:#8a7a6a;text-transform:uppercase}
-  .chip .val{font-size:16px;color:var(--green);text-shadow:0 0 5px var(--green-dim);display:inline-block;transform-origin:center}
+  .chip .val{font-size:16px;color:var(--green);text-shadow:0 0 5px var(--green-dim);display:inline-block;transform-origin:center;font-variant-numeric:tabular-nums}
   .chip .val.red{color:var(--red);text-shadow:0 0 5px var(--red)}
-  .chip input{width:48px;background:#0a0705;border:1px solid var(--red-dim);color:var(--green);font-family:inherit;font-size:15px;padding:2px 3px;border-radius:4px;text-align:center}
+  /* PUNTATA e MOLTIPL. grandi, SOTTO i pulsanti */
+  .statrow{display:flex;gap:10px;justify-content:center;width:100%;max-width:340px;margin-top:10px}
+  .statbox{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--panel);border:1px solid #1a0c0c;border-radius:9px;padding:8px 4px;min-width:0}
+  .statbox .lbl{font-size:9px;letter-spacing:1px;color:#8a7a6a;text-transform:uppercase}
+  .statbox .val{font-size:19px;color:var(--green);text-shadow:0 0 6px var(--green-dim);display:inline-block;transform-origin:center;font-variant-numeric:tabular-nums}
+  .statbox .val.red{color:var(--red);text-shadow:0 0 6px var(--red)}
+  .statbox input{width:100%;max-width:62px;background:#0a0705;border:1px solid var(--red-dim);color:var(--green);font-family:inherit;font-size:18px;padding:3px;border-radius:4px;text-align:center}
   .controls{display:flex;gap:10px;justify-content:center;width:100%;max-width:440px;margin-top:12px}
   .controls button{flex:1}
   .links{display:flex;gap:10px;justify-content:center;align-items:center;width:100%;max-width:470px;margin:10px auto 4px}
@@ -78,7 +85,7 @@
     padding:14px;
     box-shadow:0 0 30px rgba(176,38,255,.08) inset;
   }
-  .grid-wrap{position:relative;width:100%;max-width:min(560px,52vh);line-height:0}
+  .grid-wrap{position:relative;width:100%;max-width:min(560px,48vh);line-height:0}
   .leaderboard{width:222px;background:var(--panel);border:1px solid #1c1030;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 30px rgba(176,38,255,.08) inset}
   .lb-head{color:var(--green);letter-spacing:3px;font-size:15px;text-align:center;text-shadow:0 0 6px var(--green-dim)}
   .lb-me{display:flex;align-items:center;gap:8px;justify-content:center}
@@ -143,12 +150,12 @@
   #cashBtn{background:var(--red);color:#fff;box-shadow:0 0 14px var(--red)}
   #cashBtn:not(:disabled){animation:cashpulse 1.1s ease-in-out infinite}
   @keyframes cashpulse{0%,100%{box-shadow:0 0 10px var(--red)}50%{box-shadow:0 0 22px var(--red-glow)}}
-  .msg{margin-top:12px;min-height:22px;font-size:14px;letter-spacing:2px;text-align:center;color:var(--green);text-shadow:0 0 6px var(--green-dim)}
-  .msg.dead{color:var(--red);text-shadow:0 0 8px var(--red)}
+  .msg{margin:12px auto 0;min-height:22px;max-width:480px;width:100%;font-size:16px;font-weight:700;letter-spacing:1.5px;text-align:center;color:#7fd3ff;text-shadow:0 0 10px var(--green);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:9px 12px}
+  .msg.dead{color:#f3a6ff;text-shadow:0 0 12px var(--red);border-color:rgba(176,38,255,.3)}
   #lbLink{display:flex;align-items:center;justify-content:center;gap:8px;margin:28px auto 4px;width:100%;max-width:440px;box-sizing:border-box;font-family:inherit;font-weight:700;letter-spacing:3px;font-size:16px;text-decoration:none;color:var(--green);background:rgba(42,171,238,.08);border:2px solid var(--green-dim);border-radius:8px;padding:15px 22px;text-align:center;transition:transform .08s,box-shadow .15s,background .15s}
   #lbLink:active{transform:scale(.97)}
   #lbLink:hover{background:rgba(42,171,238,.16);box-shadow:0 0 16px var(--green-dim)}
-  .sound-toggle{position:fixed;top:14px;right:14px;z-index:120;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px}
+  .sound-toggle{position:fixed;top:14px;right:14px;z-index:120;background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px;border-radius:4px;cursor:pointer;font-family:inherit}
   #langWrap{position:fixed;top:14px;left:14px;z-index:120}
   #langBtn{background:var(--panel);border:1px solid #1a0c0c;color:var(--green);padding:6px 10px;font-size:12px;letter-spacing:1px;font-family:inherit;cursor:pointer;border-radius:4px}
   #langMenu{position:absolute;top:36px;left:0;background:var(--panel);border:1px solid #1c1030;border-radius:6px;padding:4px;display:flex;flex-direction:column;gap:2px;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.55)}
@@ -157,7 +164,8 @@
   #langMenu button:hover{background:#1a1030;color:var(--green)}
   #langMenu button.sel{color:var(--green);background:#15102a}
   #flash{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:50}
-  #crtBtn{top:48px}
+  #musicBtn{top:48px}
+  #crtBtn{top:82px}
   #crt{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;
     background:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.22) 50%),
@@ -190,7 +198,7 @@
   .tut-steps li b{font-size:16px;line-height:1.2;flex:none}
   #tutPlay{background:var(--green);color:#042033;font-family:inherit;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;padding:13px 28px;font-size:15px;cursor:pointer;box-shadow:0 0 16px var(--green-dim);width:100%}
   #tutPlay:active{transform:scale(.97)}
-  /* ---- SPLASH (schermata d'avvio, poster + barra di caricamento) ---- */
+  /* ---- SPLASH (poster d'avvio + barra di caricamento) ---- */
   #splash{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:radial-gradient(circle at 50% 42%, #160a28 0%, var(--bg) 72%);transition:opacity .55s ease}
   #splash.hide{opacity:0;pointer-events:none}
   #splashImg{width:min(92%,560px);height:auto;border-radius:12px;filter:drop-shadow(0 0 28px rgba(176,38,255,.45));animation:splashpop .6s cubic-bezier(.2,1.3,.35,1) both}
@@ -203,17 +211,20 @@
     body{padding:7px}
     header{margin-bottom:6px}
     .stage{padding:8px;gap:8px}
-    .topbar{gap:6px;margin-bottom:8px}
-    .chip{padding:3px 8px;min-width:0}
+    .topbar{margin-bottom:8px;gap:6px}
+    .chip{padding:3px 9px;min-width:0}
     .chip .val{font-size:15px}
-    .chip input{width:42px;font-size:14px}
+    .statrow{gap:8px;margin-top:8px}
+    .statbox{padding:7px 4px}
+    .statbox .val{font-size:19px}
+    .statbox input{font-size:17px}
     .controls{margin-top:8px;gap:8px}
     #startBtn,#cashBtn{padding:11px 8px;font-size:14px;letter-spacing:1px}
-    .msg{margin-top:8px;font-size:13px;letter-spacing:1px}
+    .msg{margin-top:8px;font-size:14px;padding:7px 10px;letter-spacing:1px}
     .links{margin-top:8px}
     .links #lbLink{font-size:14px;padding:11px 10px}
     .links #tutLink{font-size:12px}
-    .grid-wrap{max-width:min(560px,46vh)}   /* limita la griglia in altezza: tutto entra senza scroll */
+    .grid-wrap{max-width:min(560px,44vh)}   /* griglia limitata in altezza: tutto entra senza scroll */
   }
 </style>
 </head>
@@ -222,6 +233,7 @@
   <div id="flash"></div>
   <div id="crt"></div>
   <button class="sound-toggle" id="soundBtn">♪ ON</button>
+  <button class="sound-toggle" id="musicBtn">♫ ON</button>
   <button class="sound-toggle" id="crtBtn">▦ CRT</button>
   <div id="langWrap"><button id="langBtn" title="Lingua / Language">🌐 IT</button><div id="langMenu" hidden></div></div>
   <header>
@@ -232,8 +244,6 @@
     <button class="skin-btn viola" data-skin="viola" aria-label="Viola" title="Viola"></button>
     <button class="skin-btn blu" data-skin="blu" aria-label="Blu" title="Blu"></button>
     <div class="chip"><span class="lbl" data-i18n="hud_balance">Saldo</span><span class="val" id="balanceVal">1000.00</span></div>
-    <div class="chip"><span class="lbl" data-i18n="hud_bet">Puntata</span><input id="betInput" type="number" value="10" min="1" step="1"></div>
-    <div class="chip"><span class="lbl" data-i18n="hud_mult">Moltipl.</span><span class="val red" id="multVal">1.00x</span></div>
     <div class="chip"><span class="lbl" data-i18n="hud_win">Vincita</span><span class="val" id="winVal">0.00</span></div>
   </div>
 
@@ -252,12 +262,18 @@
     <button id="cashBtn" disabled>CASH OUT</button>
   </div>
 
+  <div class="statrow">
+    <div class="statbox"><span class="lbl" data-i18n="hud_bet">Puntata</span><input id="betInput" type="number" value="10" min="1" step="1"></div>
+    <div class="statbox"><span class="lbl" data-i18n="hud_mult">Moltipl.</span><span class="val red" id="multVal">1.00x</span></div>
+  </div>
+
   <div class="msg" id="msg">Premi START, poi clicca una cella per schivare il laser.</div>
 
   <div class="links">
     <a id="lbLink" href="classifica.html" data-i18n="btn_leaderboard">🏆 CLASSIFICA</a>
     <button id="tutLink" data-i18n="tut_help">❔ Come si gioca</button>
   </div>
+
 
   <div id="tutorial" hidden>
     <div class="tut-card">
@@ -320,7 +336,7 @@
   const gridSvg=$("gridSvg"), scaleSvg=$("scaleSvg"), stage=$("stage"), deathFace=$("deathFace");
   const balanceVal=$("balanceVal"), multVal=$("multVal"), winVal=$("winVal");
   const betInput=$("betInput"), startBtn=$("startBtn"), cashBtn=$("cashBtn"), msg=$("msg");
-  const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt");
+  const flash=$("flash"), soundBtn=$("soundBtn"), crtBtn=$("crtBtn"), crt=$("crt"), musicBtn=$("musicBtn");
   const skinBtns=Array.from(document.querySelectorAll(".skin-btn"));
   const tutorial=$("tutorial"), tutGrid=$("tutGrid"), tutPlay=$("tutPlay"), tutLink=$("tutLink"), splash=$("splash");
   const langBtn=$("langBtn"), langMenu=$("langMenu");
@@ -331,10 +347,34 @@
   /* SKIN: "viola" (gatto/Durov viola) oppure "blu" (Durov blu, laser blu). Salvata in localStorage. */
   let theme="viola"; try{ const s=localStorage.getItem("sg_theme"); if(s==="blu"||s==="viola") theme=s; }catch(e){}
   const THEME_BG={viola:"#070310", blu:"#03070f"};
+  let gameMode=null;   // "free" | "chad" (scelto nello splash; il pagamento Stars per CHAD arriva dopo)
 
   /* ---------- AUDIO (Web Audio, nessun file) ---------- */
   let actx=null, soundOn=true;
   function audio(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx&&actx.state==="suspended") actx.resume(); return actx; }
+  /* ---- MUSICA di sottofondo: tensione che accelera man mano che la griglia si stringe ---- */
+  let musicOn=true; try{ musicOn = localStorage.getItem("sg_music")!=="0"; }catch(e){}
+  let musicTimer=null, mStep=0;
+  function mtone(f0,f1,dur,type,vol){            // come tone() ma legato a musicOn (non al silenzia-SFX)
+    const a=audio(); if(!a||!musicOn) return;
+    const o=a.createOscillator(), g=a.createGain(), t=a.currentTime;
+    o.type=type||"sine"; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),t+dur);
+    g.gain.setValueAtTime(vol||0.08,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur);
+  }
+  function musicBeat(){
+    if(!musicOn){ musicTimer=null; return; }
+    const r=Math.min(state.round, MAX_ROUNDS);
+    const root=46*Math.pow(2, r/MAX_ROUNDS*0.6);            // tono di base sale un po' coi round
+    mtone(root, root*0.7, 0.22, "triangle", 0.10);          // pulsazione grave
+    if(mStep%2===0) mtone(root*3.01, root*3.0, 0.10, "sawtooth", 0.032);  // dissonanza tesa
+    if(r>=9 && mStep%2===1) mtone(root*4.02, root*4, 0.07, "square", 0.022);
+    mStep++;
+    const beat=Math.max(150, 560 - r*23);                   // intervallo che si accorcia -> ritmo che accelera
+    musicTimer=setTimeout(musicBeat, beat);
+  }
+  function startMusic(){ if(musicTimer||!musicOn) return; audio(); mStep=0; musicBeat(); }
+  function stopMusic(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer=null; } }
   function tone(f0,f1,dur,type,vol){
     const a=audio(); if(!a||!soundOn) return;
     const o=a.createOscillator(), g=a.createGain(), t=a.currentTime;
@@ -576,6 +616,7 @@
     cashBtn.disabled=true;startBtn.disabled=false;
     setMsg("msg_hit",{bet:state.bet.toFixed(2)},true);
     drawScale();
+    stopMusic();
   }
 
   function cashOut(){
@@ -585,6 +626,7 @@
     state.playing=false;state.maxed=false;cashBtn.disabled=true;startBtn.disabled=false;
     haptic("cash"); sfx.cash();
     setMsg("msg_cashed",{win:win.toFixed(2),mult:fmt(state.mult)});
+    stopMusic();
   }
 
   function start(){
@@ -597,6 +639,7 @@
     setMult();setWin();drawGrid();drawScale();
     startBtn.disabled=true;cashBtn.disabled=false;
     setMsg("msg_pick",{axis:"h"});
+    startMusic();
   }
 
   /* ---------- EFFETTI ---------- */
@@ -644,6 +687,8 @@
   soundBtn.addEventListener("click",()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?"♪ ON":"♪ OFF";});
   let crtOn=true;
   crtBtn.addEventListener("click",()=>{crtOn=!crtOn;crt.style.display=crtOn?"block":"none";crtBtn.textContent=crtOn?"▦ CRT":"▦ OFF";});
+  musicBtn.textContent = musicOn?"♫ ON":"♫ OFF";
+  musicBtn.addEventListener("click",()=>{ musicOn=!musicOn; musicBtn.textContent=musicOn?"♫ ON":"♫ OFF"; try{localStorage.setItem("sg_music",musicOn?"1":"0");}catch(e){} if(!musicOn) stopMusic(); else if(state.playing) startMusic(); });
   // toggle skin VIOLA <-> BLU
   function applyTheme(t){
     theme=t;
@@ -701,16 +746,16 @@
   buildTutGrid();
   let tutSeen=false; try{ tutSeen=!!localStorage.getItem("sg_tut_seen"); }catch(e){}
   if(!tutSeen) showTutorial();
-  // splash d'avvio: resta visibile sopra a tutto, poi sfuma (o si salta col tap)
+  // splash d'avvio: poster a tutto schermo, poi sfuma (agganciato al load dell'immagine; tap per saltare)
   if(splash){
     const simg=$("splashImg");
     let gone=false;
     const hideSplash=()=>{ if(gone) return; gone=true; splash.classList.add("hide"); setTimeout(()=>{ splash.style.display="none"; }, 600); };
-    const ready=()=>setTimeout(hideSplash, 1100);                 // mostra l'immagine ~1.1s DOPO che si e' caricata
+    const ready=()=>setTimeout(hideSplash, 1100);
     if(simg && simg.complete && simg.naturalWidth>0) ready();
     else if(simg){ simg.addEventListener("load", ready); simg.addEventListener("error", ()=>setTimeout(hideSplash, 500)); }
     else ready();
-    setTimeout(hideSplash, 5000);                                 // cap di sicurezza (se l'immagine non carica)
+    setTimeout(hideSplash, 5000);
     splash.addEventListener("click", hideSplash);
   }
   setBalance(1000);drawGrid();drawScale();
