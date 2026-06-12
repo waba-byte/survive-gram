@@ -144,6 +144,13 @@ export default {
       return json({ setWebhook: set, info: info.result });
     }
 
+    /* ---------- /me : username del bot (serve per i link startapp) ---------- */
+    if (path === "/me" && method === "GET") {
+      if (!env.BOT_TOKEN) return cors(json({ ok: false, error: "missing BOT_TOKEN" }, 500));
+      const r = await (await tg(env.BOT_TOKEN, "getMe", {})).json();
+      return cors(json({ ok: !!r.ok, username: r.result && r.result.username, name: r.result && r.result.first_name }));
+    }
+
     /* ---------- health check (GET) ---------- */
     if (method !== "POST")
       return new Response("Survive Gram bot is alive. ⚡", { headers: { "content-type": "text/plain; charset=utf-8" } });

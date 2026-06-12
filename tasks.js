@@ -15,6 +15,7 @@
   const CHANNEL_URL = "";                                            // es. "https://t.me/survivegram"
   const SHARE_URL   = "https://waba-byte.github.io/survive-gram/";   // link condiviso dagli utenti
   const WORKER      = "https://survive-gram-bot.waba.workers.dev";   // backend: elenco missioni + registro completamenti
+  const BOT         = "SurviveGram_bot";                             // @username del bot (link startapp / referral)
 
   /* ====== ELENCO MISSIONI (facile da modificare / aggiungere) ======
      type "stat": automatica; completata quando la statistica raggiunge `goal`.
@@ -112,7 +113,10 @@
     try{
       if(t.share){
         const txt=(window.I18N&&I18N.t("tsk_share_text"))||"Survive Gram";
-        const link="https://t.me/share/url?url="+encodeURIComponent(t.url||SHARE_URL)+"&text="+encodeURIComponent(txt);
+        const me=TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user;
+        const ref=(me&&me.id)?("ref_"+me.id):"play";                  // referral: chi invita
+        const appUrl=BOT ? ("https://t.me/"+BOT+"?startapp="+ref) : (t.url||SHARE_URL);
+        const link="https://t.me/share/url?url="+encodeURIComponent(appUrl)+"&text="+encodeURIComponent(txt);
         if(TG&&TG.openTelegramLink) TG.openTelegramLink(link); else window.open(link,"_blank");
       } else if(t.url){
         if(/^https?:\/\/t\.me\//.test(t.url)&&TG&&TG.openTelegramLink) TG.openTelegramLink(t.url);
